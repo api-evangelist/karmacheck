@@ -1,0 +1,66 @@
+generated: '2026-08-23'
+method: searched
+source: >-
+  registry.npmjs.org search + pypi.org + rubygems.org + crates.io + api.github.com/orgs +
+  https://developer.karmacheck.com/ documentation sweep
+package_count: 0
+official_sdk_count: 0
+packages: []
+detail: >-
+  KarmaCheck ships NO client libraries. Every registry queried returned nothing first-party and the
+  documentation never references an SDK — the reference shows raw curl for every operation, and the
+  API basics page tells integrators to export the OpenAPI and import it into an API client such as
+  Postman rather than pointing at a library. There is also no public source presence: no GitHub
+  organization exists under karmacheck, KarmaCheck or karmacheckinc.
+registry_probes:
+- registry: npm
+  endpoint: https://registry.npmjs.org/-/v1/search?text=karmacheck
+  status: 200
+  results: 0
+  version: null
+  published: null
+  note: Zero packages match. Checked, nothing to record.
+- registry: pypi
+  endpoint: https://pypi.org/pypi/karmacheck/json
+  status: 404
+  version: null
+  published: null
+  note: No package. Checked, nothing to record.
+- registry: rubygems
+  endpoint: https://rubygems.org/api/v1/gems/karmacheck.json
+  status: 404
+  version: null
+  published: null
+- registry: crates.io
+  endpoint: https://crates.io/api/v1/crates/karmacheck
+  status: 403
+  version: null
+  published: null
+  note: >-
+    crates.io answered 403 to the probe (its edge policy on unauthenticated tooling), so absence
+    could not be positively confirmed there. Given zero presence on every other registry and no
+    Rust anywhere in the docs, a first-party crate is very unlikely, but this specific registry is
+    an unverified negative rather than a verified one.
+- registry: github
+  endpoint: https://api.github.com/orgs/karmacheck
+  status: 404
+  note: No GitHub organization under karmacheck, KarmaCheck or karmacheckinc.
+related_third_party:
+- name: mcp-remote
+  registry: npm
+  official: false
+  first_party: false
+  version: null
+  published: null
+  note: >-
+    KarmaCheck's MCP getting-started guide instructs users to run `npx -y mcp-remote
+    https://mcp-stage.karmacheck.io`. mcp-remote is the GENERIC MCP remote-transport bridge from the
+    MCP project, not a KarmaCheck package — KarmaCheck publishes no npm package of its own. Version
+    is recorded as null because the documented invocation is unpinned (`npx -y mcp-remote` with no
+    version specifier), so a consumer cannot tell which build they get either. That is the finding,
+    not a gap in this probe.
+impact: >-
+  With no SDK and no CLI, every KarmaCheck integration is hand-rolled against the OpenAPI. That
+  raises the value of the contract itself — and makes the fact that KarmaCheck's consolidated
+  openapi.json export sits behind a login (HTTP 302) the sharpest single friction point in the
+  developer experience.

@@ -1,0 +1,181 @@
+generated: '2026-08-23'
+method: derived
+source: >-
+  openapi/karmacheck-api-openapi.yml +
+  https://developer.karmacheck.com/background-check-api/guides/mcp-get-started-guide +
+  https://www.karmacheck.com/mcp
+summary: >-
+  Binds the capabilities KarmaCheck documents for its MCP server to the REST operations that back
+  them. IMPORTANT CAVEAT ON CONFIDENCE: KarmaCheck's product MCP endpoint
+  (https://mcp-stage.karmacheck.io) rejects an anonymous tools/list with HTTP 403, so the real tool
+  NAMES and inputSchemas could not be observed. Every row below is therefore keyed on a documented
+  CAPABILITY, not on a verified tool name, and no tool name has been invented. Confidence is set
+  accordingly: `medium` where KarmaCheck documents both the capability and the inputs it collects,
+  `low` where only the capability is described in prose or in a marketing prompt example. Rebinding
+  to real tool names requires an authenticated tools/list.
+surfaces:
+  openapi:
+    file: openapi/karmacheck-api-openapi.yml
+    operations: 69
+    gated: false
+    note: >-
+      Reassembled from the per-operation OpenAPI slices KarmaCheck publishes in its public docs.
+      KarmaCheck's own consolidated openapi.json export is login-gated (302).
+  mcp:
+    url: https://mcp-stage.karmacheck.io
+    gated: true
+    gate: 'HTTP 403 — Invalid token format, expected "Bearer <token>"'
+    tools_observed: 0
+  mcp_docs_platform:
+    url: https://developer.karmacheck.com/mcp
+    gated: false
+    first_party: false
+    tools_observed: 3
+    note: >-
+      Mintlify documentation-search MCP. Excluded from the crosswalk below because it queries docs
+      and has NO backing KarmaCheck REST operation — see mcp_only[].
+  graphql: null
+crosswalk:
+- tool: 'capability: create a case / order a background check'
+  category: ordering
+  rest:
+  - post-case-create
+  binding: direct
+  confidence: medium
+  note: >-
+    KarmaCheck documents that the MCP capability collects candidate first name, last name and email
+    and prompts when any is missing; those are the required candidate fields on POST /case/create.
+- tool: 'capability: order ID verification'
+  category: ordering
+  rest:
+  - post-case-create
+  - post-case-id-caseId-add-services
+  binding: parameterized
+  confidence: low
+  note: >-
+    Screening type is selected through the package / services payload rather than a dedicated
+    endpoint, so the MCP capability maps to a parameter value on these two operations.
+- tool: 'capability: order criminal background check (county, state, national)'
+  category: ordering
+  rest:
+  - post-case-create
+  - post-case-id-caseId-add-services
+  binding: parameterized
+  confidence: low
+- tool: 'capability: order motor vehicle records (MVR) check'
+  category: ordering
+  rest:
+  - post-case-create
+  - post-case-id-caseId-add-services
+  binding: parameterized
+  confidence: low
+- tool: 'capability: list cases, filter by status / awaiting candidate action'
+  category: read
+  rest:
+  - get-case-list
+  - get-case-list-all
+  binding: direct
+  confidence: medium
+- tool: 'capability: get detailed status and timeline for a specific case'
+  category: read
+  rest:
+  - get-case-id-caseid
+  - get-case-id-caseId-services
+  - get-case-id-caseid-data-servicetypeid
+  binding: composite
+  confidence: medium
+  note: >-
+    The documented prompt ("show me the timeline of all activities") spans case, services and case
+    data, which are three REST reads.
+- tool: 'capability: recurring monitoring — re-run MVR for candidates not checked in N days'
+  category: composite
+  rest:
+  - get-case-list-all
+  - post-case-create
+  binding: composite
+  confidence: low
+  note: >-
+    KarmaCheck flags this capability as resource intensive. There is no REST operation that filters
+    candidates by last-check age, so the MCP server must be enumerating cases and re-ordering.
+mcp_only:
+- tool: search_karma_check
+  reason: >-
+    Mintlify docs-search tool on the documentation MCP. Searches documentation content; there is no
+    KarmaCheck REST search-the-docs operation and it touches no screening data.
+- tool: query_docs_filesystem_karma_check
+  reason: >-
+    Mintlify read-only virtual filesystem over the documentation pages. No backing REST operation.
+- tool: submit_feedback
+  reason: >-
+    Mintlify documentation-feedback tool. No backing REST operation.
+rest_only:
+- reason: >-
+    The MCP server's documented surface is ordering + case status. The following REST areas have no
+    documented MCP capability and appear to be REST-only.
+  areas:
+  - area: Candidate onboarding, disclosures and acknowledgements
+    operations:
+    - post-case-id-caseId-fcra-language
+    - post-case-id-caseId-esig-language
+    - post-case-id-caseId-canadadisclosure-language
+    - post-case-id-caseId-customdisclosure-language
+    - post-case-id-caseId-intldisclosure-language
+    - post-case-id-caseId-disclosureType-language
+    - get-case-id-caseId-legal-status-legalType
+    - post-invitation-candidate-create
+    - post-case-id-caseId-action-resendinvite
+    - put-case-id-caseId-action-refreshinvite
+  - area: Secure documents
+    operations:
+    - post-document-secure-create
+    - post-document-secure-upload
+    - get-document-secure-id-secureDocumentId-download-url
+    - get-document-secure-list-case-id-caseId
+    - get-document-secure-mimetypes
+    - get-document-secure-type-list
+  - area: Adjudication and adverse action
+    operations:
+    - put-case-id-caseId-action-place
+    - post-case-id-caseId-action-preadverse
+    - get-case-id-caseId-preadverse-type-pdf
+    - get-case-id-caseId-preadverse-type-pdf-download
+  - area: Case lifecycle control
+    operations:
+    - put-case-id-caseId-action-beginprocessing
+    - post-case-id-caseId-cancel
+    - post-case-id-caseId-service-cancel
+    - post-case-data-id-caseDataId-search-id-searchId-cancel
+    - post-case-archive-caseId
+    - post-case-unarchive-caseId
+  - area: Catalog and reference lookups
+    operations:
+    - get-package-min-list
+    - get-package-min-id-packageid
+    - get-package-id-packageId-services
+    - get-service-cplc-list
+    - get-service-cplc-list-filter
+    - post-jurisdiction-find-all
+    - get-candidate-countries
+    - get-shipment-mask-list
+  - area: Verification book and testimony
+    operations:
+    - post-vbook-search
+    - post-testimony-create-case-id-caseId
+    - post-testimony-id-testimonyId-update-case-id-caseId
+    - delete-testimony-id-testimonyId-detach-case-id-caseId
+    - get-testimony-case-caseId
+  - area: Reports and users
+    operations:
+    - get-caseid-caseId-report-pdf-download-url
+    - post-caseid-caseId-report-pdf-download-url
+    - get-company-user-list
+coverage:
+  rest_operations_total: 69
+  rest_operations_bound: 8
+  mcp_capabilities_documented: 7
+  mcp_tools_observed: 0
+  mcp_tools_observed_docs_platform: 3
+  note: >-
+    8 of 69 REST operations are reachable through a documented MCP capability. The gap is not
+    necessarily a product gap — it is the limit of what KarmaCheck documents, and the real tool set
+    cannot be read without credentials.

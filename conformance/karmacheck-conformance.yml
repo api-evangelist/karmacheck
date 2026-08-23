@@ -1,0 +1,187 @@
+generated: '2026-08-23'
+method: searched
+source: >-
+  openapi/karmacheck-api-openapi.yml +
+  https://www.karmacheck.com/release/karmacheck-receives-soc-2-security-certification +
+  https://www.karmacheck.com/notice-to-users-fcra +
+  https://www.karmacheck.com/fcra-summary-of-rights +
+  https://developer.karmacheck.com/.well-known/oauth-authorization-server
+standards:
+- id: openapi
+  conforms: true
+  version: 3.1.0
+  evidence: >-
+    KarmaCheck authors and publishes an OpenAPI 3.1.0 contract; it is rendered operation-by-operation
+    in the public API reference and each reference page embeds the source YAML slice. 69 operations,
+    62 paths, 125 component schemas, all 69 carrying a unique operationId.
+- id: oauth2
+  conforms: partial
+  evidence: >-
+    The KarmaCheck PRODUCT API does not use OAuth 2.0 — it uses a bespoke apiKey + clientAccessToken
+    exchange that mints a non-expiring JWT bearer token. OAuth 2.0 appears only on the
+    DOCUMENTATION MCP surface, which serves RFC 8414 authorization-server metadata advertising
+    authorization_code, client_credentials and refresh_token grants with PKCE S256 and a single
+    scope, mcp:search. Recording this as partial rather than true because the OAuth surface belongs
+    to the Mintlify docs platform, not to the screening API.
+  evidence_url: https://developer.karmacheck.com/.well-known/oauth-authorization-server
+- id: rfc8414
+  name: OAuth 2.0 Authorization Server Metadata
+  conforms: true
+  evidence: >-
+    /.well-known/oauth-authorization-server on developer.karmacheck.com returns HTTP 200 with a
+    conformant metadata document (issuer, authorization_endpoint, token_endpoint,
+    registration_endpoint, response_types_supported, grant_types_supported,
+    code_challenge_methods_supported, scopes_supported).
+- id: rfc9728
+  name: OAuth 2.0 Protected Resource Metadata
+  conforms: true
+  evidence: >-
+    /.well-known/oauth-protected-resource returns HTTP 200 with `resource` and
+    `authorization_servers`.
+- id: rfc7519
+  name: JSON Web Token
+  conforms: true
+  evidence: >-
+    Authentication is a JWT bearer token minted by POST /auth/api; the contract declares
+    securityScheme JWT as http/bearer.
+- id: rfc9457
+  name: Problem Details for HTTP APIs
+  conforms: false
+  evidence: >-
+    No application/problem+json response anywhere in the 69-operation contract. Errors use a bespoke
+    {message, error, statusCode} envelope, and 404 and 409 do not even use that consistently. See
+    errors/karmacheck-problem-types.yml.
+- id: idempotency
+  conforms: false
+  evidence: >-
+    No Idempotency-Key header, no request-replay contract. The only duplicate guard is a 409 on
+    candidate email uniqueness within a group.
+- id: pagination
+  conforms: partial
+  evidence: >-
+    Page/pageSize pagination exists on exactly one of 69 operations (POST /vbook/search, via a
+    listMetadata request-body object defaulting to page 0 / pageSize 10). No list operation on cases,
+    packages, services or users paginates.
+- id: rfc8594
+  name: Sunset / Deprecation headers
+  conforms: false
+  evidence: >-
+    No Sunset or Deprecation header contract, no deprecation policy, and no operation marked
+    deprecated in the contract.
+- id: webhooks
+  conforms: true
+  evidence: >-
+    Signed HTTPS webhook surface delivered by Svix with HMAC-SHA256 signatures over
+    webhook-id.webhook-timestamp.body, a documented 8-attempt retry ladder, dual-secret rotation and
+    an explicit at-least-once / unordered delivery contract.
+- id: asyncapi
+  conforms: false
+  evidence: >-
+    Webhooks are documented in prose and tables but no AsyncAPI document is published at any probed
+    location, and no GitHub organization exists (api.github.com/orgs/karmacheck → 404).
+- id: mcp
+  name: Model Context Protocol
+  conforms: true
+  evidence: >-
+    First-party remote MCP server documented at https://mcp-stage.karmacheck.io speaking JSON-RPC
+    2.0 over the MCP transport; an anonymous tools/list returns a structured MCP auth error rather
+    than a generic 403 page. A second, non-first-party MCP server (Mintlify docs search) is served
+    at https://developer.karmacheck.com/mcp and returns a conformant tools/list with three tools
+    carrying inputSchema and annotations.
+- id: a2a
+  conforms: false
+  evidence: >-
+    No agent card at /.well-known/agent-card.json or /.well-known/agent.json on any of the six hosts
+    probed 2026-08-23.
+domain_standards:
+- id: fcra
+  name: Fair Credit Reporting Act (15 U.S.C. § 1681)
+  conforms: true
+  regime: US consumer reporting
+  evidence_in_contract: >-
+    THIS IS THE DOMAIN SIGNATURE AND IT IS IN THE CONTRACT, not only on a marketing page. The API
+    exposes a dedicated FCRA acknowledgement surface — POST/GET /case/id/{caseId}/fcra/{language}
+    with schemas LegalAcknowledgmentDisclosure, LegalAcknowledgmentDisclosures and
+    LegalAcknowledgmentSignature — and a first-class pre-adverse-action workflow
+    (POST /case/id/{caseId}/action/preadverse plus the preadverse PDF retrieval and download
+    operations). Pre-adverse action is the FCRA § 1681b(b)(3) procedure; an API that models it as a
+    resource is asserting the regime in its object model. The case lifecycle documentation further
+    states that once adverse action is initiated a case can no longer be cancelled, which is the
+    statutory sequencing made executable.
+  evidence_public:
+  - https://www.karmacheck.com/notice-to-users-fcra
+  - https://www.karmacheck.com/fcra-summary-of-rights
+  operations:
+  - post-case-id-caseId-fcra-language
+  - get-case-id-caseId-fcra-language
+  - get-case-id-caseId-legal-status-legalType
+  - post-case-id-caseId-action-preadverse
+  - get-case-id-caseId-preadverse-type-pdf
+  - get-case-id-caseId-preadverse-type-pdf-download
+- id: dot-drug-testing
+  name: US DOT drug and alcohol testing (49 CFR Part 40)
+  conforms: true
+  evidence_in_contract: >-
+    The contract carries DOT-specific order data types — `codt-drug-reason-for-test` and
+    `codt-drug-testing-authority`, added 2026-07-07 — plus the schemas CaseOrderDataDrugReasonForTest
+    and CaseOrderDataDrugTestingAuthority. Reason-for-test and testing-authority are Part 40
+    concepts, not generic ones.
+  operations:
+  - post-case-create
+  - post-case-id-caseId-add-services
+- id: pipeda-canada
+  name: Canadian disclosure regime
+  conforms: partial
+  evidence_in_contract: >-
+    Dedicated Canadian disclosure acknowledgement operations
+    (POST/GET /case/id/{caseId}/canadadisclosure/{language}) and Canadian criminal record / motor
+    vehicle record services separate from their US equivalents. The contract distinguishes the
+    jurisdiction rather than treating Canada as an international catch-all; KarmaCheck does not name
+    a specific Canadian statute in the docs, so this is recorded as partial.
+- id: oig-exclusions
+  name: HHS OIG List of Excluded Individuals/Entities
+  conforms: true
+  evidence_in_contract: >-
+    DetailsOIG and DetailsFACIS schemas plus an OIG Exclusions Search service. OIG LEIE and FACIS
+    are the named healthcare-exclusion screening sources, and their presence as first-class detail
+    types is a healthcare-credentialing domain signature.
+- id: nsopw-sex-offender
+  name: Sex offender registry search
+  conforms: true
+  evidence_in_contract: DetailsSexOffender schema and a Sex Offender Search service.
+compliance_programs:
+- name: SOC 2 Type 2
+  status: reported
+  auditor: independent third party (not named publicly)
+  announced: '2023-04-05'
+  evidence: https://www.karmacheck.com/release/karmacheck-receives-soc-2-security-certification
+  detail: >-
+    KarmaCheck announced completion of a SOC 2 Type 2 examination with a favorable report covering
+    security, confidentiality and availability. The site footer carries a standing "SOC 2 Type 2
+    Compliance" link. The report itself is not published — there is no trust centre, no
+    trust.karmacheck.com (NXDOMAIN, probed 2026-08-23) and no self-serve document request, so the
+    claim is a press release rather than an evidence portal.
+  caveat: >-
+    The announcement is from April 2023. No subsequent renewal has been published, and SOC 2 Type 2
+    reports cover a defined observation window, so a reader cannot tell from public material whether
+    a current report exists.
+- name: FCRA consumer reporting agency
+  status: operating
+  evidence:
+  - https://www.karmacheck.com/notice-to-users-fcra
+  - https://www.karmacheck.com/fcra-summary-of-rights
+  detail: >-
+    KarmaCheck publishes both the Notice to Users of Consumer Reports and the Summary of Consumer
+    Rights, the two disclosures a consumer reporting agency is obliged to provide.
+not_applicable:
+- fhir
+- fapi
+- scim
+- odata
+- psd2
+- json:api
+- openrtb
+- activitypub
+- lti
+- oai-pmh
+- iso20022

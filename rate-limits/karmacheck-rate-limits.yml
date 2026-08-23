@@ -1,0 +1,48 @@
+generated: '2026-08-23'
+method: searched
+source: >-
+  https://developer.karmacheck.com/background-check-api/overview/api/api-overview +
+  .../errors + the full developer.karmacheck.com documentation set (llms.txt index, 103 pages) +
+  openapi/karmacheck-api-openapi.yml
+limit_count: 0
+published: false
+detail: >-
+  KarmaCheck publishes NO rate limits for its REST API. A full-text sweep of every documentation
+  page listed in https://developer.karmacheck.com/llms.txt returns no match for "rate limit",
+  "throttle", "quota", "Retry-After" or "X-RateLimit". The status-codes reference documents 400,
+  403, 404, 409, 422 and 500 and does NOT list 429, and no operation in the 69-operation contract
+  declares a 429 response. There is therefore no documented runtime exhaustion signal an agent can
+  read.
+limits: []
+response_headers: []
+status_on_exhaustion: null
+status_note: >-
+  429 is not documented and is not declared by any operation. That is an absence of documentation,
+  not proof the API is unlimited — an unannounced limit is worse for an agent than a published one,
+  because there is no header to back off against.
+related_documented_limits:
+- surface: webhook delivery (KarmaCheck calling YOU)
+  documented: true
+  detail: >-
+    The one place KarmaCheck does publish timing and backoff is the inbound direction. A receiver
+    must acknowledge with 2xx within 15 SECONDS or the delivery is treated as failed, and KarmaCheck
+    retries on a fixed 8-attempt ladder (5s, 5m, 30m, 2h, 5h, 10h, 10h) before giving up. This is a
+    delivery contract, not a rate limit on your requests.
+  source: https://developer.karmacheck.com/background-check-api/reference/webhooks/webhooks-overview
+- surface: MCP monitoring prompts
+  documented: partial
+  detail: >-
+    The MCP getting-started guide warns that recurring monitoring prompts are "resource intensive"
+    and should be used with a clear timeframe, but attaches no number to that warning.
+  source: https://developer.karmacheck.com/background-check-api/guides/mcp-get-started-guide
+- surface: sandbox
+  documented: true
+  detail: >-
+    Not a rate limit but a hard input restriction: in staging, all SSNs other than 111-22-3333 and
+    333-22-1111 are blocked, and outbound candidate email is blocked from leaving KarmaCheck.
+probed: false
+probe_note: >-
+  Live probing was not attempted. api.karmacheck.io answers HTTP 403 to every unauthenticated
+  request from an edge policy, so no rate-limit header can be observed anonymously, and deliberately
+  driving an authenticated screening API into exhaustion would order billable, FCRA-regulated
+  consumer reports.

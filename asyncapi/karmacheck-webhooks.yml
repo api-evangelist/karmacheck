@@ -1,0 +1,117 @@
+generated: '2026-08-23'
+method: searched
+source: https://developer.karmacheck.com/background-check-api/reference/webhooks/webhooks-overview
+type: webhook-catalog
+summary: >-
+  KarmaCheck publishes a documented, signed webhook surface but does NOT publish an AsyncAPI
+  document — no /asyncapi.yaml, no event catalog file and no GitHub organization exists (probed
+  2026-08-23, api.github.com/orgs/karmacheck 404). This is the webhook catalog captured from
+  KarmaCheck's own reference; nothing has been fabricated into AsyncAPI form.
+transport: https
+delivery:
+  provider: Svix
+  provider_docs: https://docs.svix.com/receiving/introduction
+  method: POST
+  content_type: application/json
+  subscription_ui: https://app-stage.karmacheck.com/company-settings/webhooks
+  subscription_scope: >-
+    A subscription can be configured at company level (delivers events for every group) or at group
+    level. When a group-level webhook exists, that group's events go only to the group subscription
+    and not to the company subscription.
+security:
+  signing: HMAC-SHA256
+  secret: per-endpoint signing secret, prefixed whsec_
+  headers:
+  - name: webhook-id
+    purpose: Unique message identifier; the same ID is reused when a message is retried.
+  - name: webhook-timestamp
+    purpose: Seconds since the Unix epoch.
+  - name: webhook-signature
+    purpose: 'Space-delimited list of versioned signatures, e.g. v1,<base64-encoded-hmac>'
+  verification: >-
+    Concatenate id, timestamp and the RAW request body with "." separators, HMAC-SHA256 that string
+    with the base64-decoded portion of the signing secret (the part after whsec_), base64-encode the
+    result and compare in constant time against each signature in the header after stripping the
+    "v1," prefix. Reject when no signature matches or the timestamp is outside tolerance;
+    KarmaCheck recommends 5 minutes.
+  rotation: >-
+    During a rotation window KarmaCheck signs with both the old and new secret simultaneously, so a
+    verifier that accepts any matching signature keeps working across a rotation.
+  caveat: >-
+    Verify against the raw body bytes. JSON middleware that parses before verification can reorder
+    keys or change whitespace and break the signature.
+envelope:
+  properties:
+  - name: messageId
+    type: string
+    description: Unique identifier of the event notification.
+  - name: event
+    type: string
+    description: The webhook event being delivered.
+  - name: apiTrackingCode
+    type: string | null
+    description: An identifier for tracking a case.
+  - name: apiTrackingUser
+    type: string | null
+    description: An identifier for tracking a case.
+  - name: eventObject
+    type: object
+    description: Event-specific properties.
+events:
+- name: case.statuschange
+  description: The status of a case has changed.
+  payload_schema: CaseEvent
+  docs: https://developer.karmacheck.com/background-check-api/reference/webhooks/events/case-status-change
+  recommended_follow_up: 'GET /case/id/{caseId}'
+  key_fields:
+  - id
+  - caseStatusId
+  - caseStatus
+  - secondaryCaseStatusId
+  - secondaryStatus
+  - resultType
+  - candidateId
+  - packageId
+  - adverseActionStatusId
+  - modStamp
+- name: casedata.statuschange
+  description: The status of a service (case data) has changed.
+  payload_schema: CaseDataEvent
+  docs: https://developer.karmacheck.com/background-check-api/reference/webhooks/events/case-data-status-change
+  recommended_follow_up: 'GET /case/id/{caseId}/data/{serviceTypeId}'
+delivery_semantics:
+  ack: >-
+    The receiver must return a 2xx status as quickly as possible. Anything outside 2xx, INCLUDING
+    3xx, is treated as a failed delivery.
+  timeout_seconds: 15
+  retries:
+    total_attempts: 8
+    schedule:
+    - attempt: 1
+      delay: initial delivery
+    - attempt: 2
+      delay: 5 seconds
+    - attempt: 3
+      delay: 5 minutes
+    - attempt: 4
+      delay: 30 minutes
+    - attempt: 5
+      delay: 2 hours
+    - attempt: 6
+      delay: 5 hours
+    - attempt: 7
+      delay: 10 hours
+    - attempt: 8
+      delay: 10 hours
+    after_exhaustion: retries stop
+  ordering: >-
+    NOT guaranteed. KarmaCheck states delivery order may differ from event order and that receivers
+    must not rely on it; the documented pattern is to treat every notification as a signal to fetch
+    current state.
+  duplicates: >-
+    Possible. KarmaCheck recommends de-duplicating on the case id plus caseStatusId,
+    secondaryCaseStatusId and modStamp.
+  missed_events: >-
+    KarmaCheck recommends a watchdog that detects when an expected event type has not arrived within
+    an expected window and then polls for the latest data.
+asyncapi_published: false

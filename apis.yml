@@ -1,18 +1,74 @@
 aid: karmacheck
 name: KarmaCheck
-description: 'KarmaCheck is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'KarmaCheck Inc. is a San Francisco based, API-first background check and credential
+  verification company serving staffing, healthcare, gig-economy, call-center and IT/tech hiring
+  workflows. The KarmaCheck API is a REST contract on api.karmacheck.io covering the full screening
+  lifecycle: creating and placing cases, candidate onboarding with FCRA, e-signature, Canada,
+  international and location-specific disclosure acknowledgement, criminal, identity, motor vehicle
+  record, education, employment, professional-licence and occupational-health screenings, secure
+  document upload and retrieval, package and service catalogs, jurisdiction lookup, verification-book
+  search, adjudication and pre-adverse-action documents. Results are pushed asynchronously through
+  Svix-delivered, HMAC-SHA256 signed webhooks (case.statuschange and casedata.statuschange).
+  KarmaCheck also operates a remote MCP server so agents can order and track screenings from natural
+  language, and integrates with Bullhorn, Workday and symplr CTM. The company holds a SOC 2 Type 2
+  report and operates as an FCRA consumer reporting agency.'
+image: https://cdn.prod.website-files.com/673634b37e2e1340c1ee5f3d/6736aa68f0e954a84817b9c0_Favicon-Icon.png
 url: https://raw.githubusercontent.com/api-evangelist/karmacheck/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
 specificationVersion: '0.20'
 created: '2026-08-23'
 modified: '2026-08-23'
 tags:
-- Company
-apis: []
+- Background Checks
+- Employment Screening
+- Identity Verification
+- Credential Verification
+- Motor Vehicle Records
+- Occupational Health Screening
+- Drug Screening
+- HR Tech
+- Staffing
+- Healthcare
+- Compliance
+- FCRA
+- Adjudication
+- Webhook
+- MCP Server
+- agent-native
+apis:
+- aid: karmacheck:karmacheck-api
+  name: KarmaCheck API
+  description: 'REST API for ordering and tracking background checks, credential verifications and
+    occupational health screenings. 69 operations across 62 paths covering authentication, cases,
+    candidate onboarding and disclosures, packages, services, secure documents, users and the
+    verification book. Authenticated with a JWT bearer token minted by POST /auth/api from an apiKey
+    and a clientAccessToken issued by KarmaCheck. Staging and production environments are separated
+    by host, and staging accepts predefined test SSNs that drive simulated clear / needs-review
+    results.'
+  humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
+  baseURL: https://api.karmacheck.io
+  tags:
+  - Authentication
+  - Cases
+  - Candidate onboarding
+  - Secure documents
+  - Packages
+  - Services
+  - Users
+  - Companies
+  - Partner integrations
+  - Verification Book
+  - Webhook
+  properties:
+  - type: OpenAPI
+    url: openapi/karmacheck-api-openapi.yml
+  - type: Overlay
+    url: overlays/karmacheck-api-overlay.yaml
+  - type: Documentation
+    url: https://developer.karmacheck.com/background-check-api/overview/introduction
+  - type: APIReference
+    url: https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -20,4 +76,63 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
-  url: https://forgeglobal.com/karmacheck_stock/
+  url: https://www.karmacheck.com/
+- type: DeveloperPortal
+  url: https://developer.karmacheck.com/
+- type: Documentation
+  url: https://developer.karmacheck.com/background-check-api/overview/introduction
+- type: APIReference
+  url: https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client
+- type: GettingStarted
+  url: https://developer.karmacheck.com/background-check-api/guides/candidate-provided-pii-flow
+- type: Support
+  url: https://www.karmacheck.com/contact-us
+- type: Blog
+  url: https://www.karmacheck.com/blogs
+- type: Login
+  url: https://app.karmacheck.com/login
+- type: TermsOfService
+  url: https://www.karmacheck.com/tos
+- type: PrivacyPolicy
+  url: https://www.karmacheck.com/privacy-policy
+- type: ChangeLog
+  url: changelog/karmacheck-changelog.yml
+- type: LLMsTxt
+  url: llms/karmacheck-llms.txt
+- type: MCPServer
+  url: mcp/karmacheck-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/karmacheck-tool-crosswalk.yml
+- type: Webhooks
+  url: asyncapi/karmacheck-webhooks.yml
+- type: Authentication
+  url: authentication/karmacheck-authentication.yml
+- type: Conventions
+  url: conventions/karmacheck-conventions.yml
+- type: ErrorCatalog
+  url: errors/karmacheck-problem-types.yml
+- type: DataModel
+  url: data-model/karmacheck-data-model.yml
+- type: Lifecycle
+  url: lifecycle/karmacheck-lifecycle.yml
+- type: Sandbox
+  url: sandbox/karmacheck-sandbox.yml
+- type: Conformance
+  url: conformance/karmacheck-conformance.yml
+- type: Compliance
+  url: conformance/karmacheck-conformance.yml
+- type: Plans
+  url: plans/karmacheck-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/karmacheck-rate-limits.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: DomainSecurity
+  url: security/karmacheck-domain-security.yml
+- type: WellKnown
+  url: well-known/karmacheck-well-known.yml
+x-enrichment:
+  date: '2026-08-23'
+  status: enriched
+  artifacts_added: 24
+  pass: local-v1

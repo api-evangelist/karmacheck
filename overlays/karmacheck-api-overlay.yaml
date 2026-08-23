@@ -1,0 +1,171 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the KarmaCheck API
+  version: 1.0.0
+extends: ../openapi/karmacheck-api-openapi.yml
+x-provenance:
+  generated: '2026-08-23'
+  method: derived
+  source: >-
+    openapi/karmacheck-api-openapi.yml + conventions/karmacheck-conventions.yml +
+    errors/karmacheck-problem-types.yml + sandbox/karmacheck-sandbox.yml +
+    lifecycle/karmacheck-lifecycle.yml
+  note: >-
+    This overlay records API Evangelist's enhancements ONLY. It never mutates the original contract
+    on disk. Every statement below is sourced from KarmaCheck's own published documentation; nothing
+    asserts behaviour KarmaCheck does not document.
+actions:
+- target: $.info
+  description: >-
+    Record the environment split, the absence of a version coordinate and the provenance of this
+    reassembled contract.
+  update:
+    x-environments:
+      production: https://api.karmacheck.io
+      staging: https://api-stage.karmacheck.io
+      note: >-
+        Environment is selected by HOST only. Credentials carry no test/live prefix, so the same
+        code pointed at the wrong base URL orders a real, billable, FCRA-regulated consumer report.
+    x-versioning:
+      in_path: false
+      in_header: false
+      scheme: dated-changelog-only
+      changelog: https://developer.karmacheck.com/background-check-api/overview/changelog
+    x-contract-availability:
+      consolidated_export: https://developer.karmacheck.com/background-check-api/api-reference/openapi.json
+      consolidated_export_status: 302
+      consolidated_export_note: >-
+        KarmaCheck's own single-file OpenAPI export requires a docs login. The per-operation slices
+        embedded in the public reference are not gated, which is what this contract was reassembled
+        from.
+- target: $.components.securitySchemes.JWT
+  description: Document the token lifetime, the tenancy boundary and the query-string prohibition.
+  update:
+    description: >-
+      JWT bearer token minted by POST /auth/api from an apiKey and a clientAccessToken, both issued
+      by KarmaCheck (there is no self-serve signup). The token is scoped to ONE group within one
+      company. Tokens DO NOT EXPIRE — they can only be invalidated — so treat them as long-lived
+      secrets and never place them in a query string, which KarmaCheck explicitly prohibits.
+    x-token-lifetime: non-expiring
+    x-revocation: invalidation only; no refresh flow and no expiry claim contract
+    x-tenancy: one group per token
+- target: $.paths['/case/create'].post
+  description: >-
+    Flag the highest-consequence write in the contract: it is billable, regulated, non-idempotent
+    and reversible only within a state window.
+  update:
+    x-agentic-access:
+      action_class: write
+      consequence: high
+      consequence_detail: >-
+        Orders a billable, FCRA-regulated consumer report on a named individual and emails that
+        person an onboarding invitation. Passthrough fees from courts, registries and testing
+        facilities are incurred and are not set by KarmaCheck.
+      escalation: human-approval-recommended
+    x-idempotency:
+      supported: false
+      guard: >-
+        None. The only duplicate protection is a server-side 409 Conflict when a case already exists
+        for the same candidate email within the same group; it returns the conflicting cases rather
+        than the original result. NEVER blind-retry this operation after a 500 — reconcile with
+        GET /case/list first.
+    x-reversibility:
+      reversal_operation: post-case-id-caseId-cancel
+      window: >-
+        State-bounded. Cancellable while Pending; still cancellable at Complete/Consider unless
+        adverse action has been initiated or another screening has been added; at Placed unless
+        another screening has been added; once Canceled, not reopenable without asking KarmaCheck.
+      window_source: https://developer.karmacheck.com/background-check-api/overview/case-lifecycle
+      refunds: not documented
+    x-attribution-header:
+      name: karmacheck-on-behalf-of
+      value: email address
+      semantics: >-
+        Optional. Attributes the case to a KarmaCheck user instead of the API token. Ignored if no
+        such user exists; FAILS the call if the user exists but lacks access to the package. It can
+        only narrow permissions, never widen them.
+- target: $.paths['/case/id/{caseId}/action/preadverse'].post
+  description: Mark the one-way door.
+  update:
+    x-agentic-access:
+      action_class: write
+      consequence: severe
+      escalation: human-approval-required
+    x-reversibility:
+      reversal_operation: null
+      irreversible: true
+      note: >-
+        Initiating pre-adverse action has no reversal, and doing so makes the parent case
+        permanently non-cancellable. This is the FCRA § 1681b(b)(3) procedure — a legal step against
+        a named individual. An agent must not take it autonomously.
+- target: $.paths['/case/archive/{caseId}'].post
+  description: Record the hidden side effect of archiving.
+  update:
+    x-reversibility:
+      reversal_operation: post-case-unarchive-caseId
+      window: symmetric, no documented expiry
+      caveat: >-
+        Archiving a case in secondary status "Waiting for Authorization" or "Authorization in
+        Progress", or primary status Blocked, ALSO CANCELS it. Unarchiving does not undo that
+        cancellation.
+- target: $.paths['/vbook/search'].post
+  description: Note that this is the only paginated operation in the contract.
+  update:
+    x-pagination:
+      style: page-number-in-request-body
+      envelope: listMetadata
+      page: page
+      page_size: pageSize
+      defaults:
+        page: 0
+        pageSize: 10
+      note: The only paginated operation of 69. No list operation on cases, packages or users pages.
+- target: $.paths..responses['409']
+  description: Document the non-standard 409 envelope.
+  update:
+    x-error-envelope: '{ httpStatus, cases[] } — NOT the canonical { message, error, statusCode } shape'
+- target: $.paths..responses['404']
+  description: Warn that 404 may not return JSON.
+  update:
+    x-error-envelope: >-
+      May return a bare text/plain body (e.g. "Invalid case") rather than the JSON envelope. Branch
+      on status before parsing.
+- target: $.paths..responses['500']
+  description: Attach retry guidance that distinguishes reads from writes.
+  update:
+    x-retry-guidance: >-
+      Safe to retry with backoff for reads. NOT safe to blind-retry any write — there is no
+      idempotency key, so a retry after a 500 that actually succeeded orders a second billable
+      consumer report or returns 409.
+- target: $.paths..responses['422']
+  description: Distinguish 422 from 400.
+  update:
+    x-semantics: >-
+      Business-rule failure, not shape failure. Usually means the case is in a state that forbids
+      the action. Do not retry unchanged; consult the case lifecycle table.
+- target: $
+  description: Attach the sandbox contract and the event surface to the document root.
+  update:
+    x-sandbox:
+      base_url: https://api-stage.karmacheck.io
+      test_ssn_clear: 111-22-3333
+      test_ssn_review: 333-22-1111
+      other_ssns: blocked in sandbox
+      candidate_email_rule: >-
+        Email is the candidate uniqueness key, so every order needs a distinct address. KarmaCheck
+        recommends plus-addressed timestamps, e.g. test+20250808T1530@test.com.
+      artifact: sandbox/karmacheck-sandbox.yml
+    x-events:
+      transport: webhook
+      provider: Svix
+      signing: HMAC-SHA256 over webhook-id.webhook-timestamp.rawBody
+      events:
+      - case.statuschange
+      - casedata.statuschange
+      ack_timeout_seconds: 15
+      retry_attempts: 8
+      ordering: not guaranteed
+      artifact: asyncapi/karmacheck-webhooks.yml
+    x-rate-limits:
+      published: false
+      artifact: rate-limits/karmacheck-rate-limits.yml

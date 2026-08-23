@@ -1,0 +1,12 @@
+generated: '2026-08-23'
+method: derived
+source: openapi/karmacheck-api-openapi.yml
+summary:
+  types:
+  - http
+schemes:
+- name: JWT
+  type: http
+  scheme: bearer
+  sources:
+  - openapi/karmacheck-api-openapi.yml

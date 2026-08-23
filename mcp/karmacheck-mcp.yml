@@ -1,0 +1,102 @@
+generated: '2026-08-23'
+method: searched
+source: https://developer.karmacheck.com/background-check-api/guides/mcp-get-started-guide
+name: KarmaCheck MCP Server
+status: published
+summary: >-
+  KarmaCheck operates a first-party remote MCP server that lets an agent order and track background
+  checks, ID verifications and motor vehicle record checks from natural language. The company
+  markets it as the first ID-verification and background-check MCP server. Staging is generally
+  available to anyone with API credentials; PRODUCTION IS WAITLISTED — the getting-started guide
+  routes production access through https://contact.karmacheck.com/mcp-production-wl followed by
+  contracting and credentialing, because running background checks is regulated activity.
+deployment:
+  mode: remote
+  endpoint: https://mcp-stage.karmacheck.io
+  auth: api-key
+  verified: probed
+  note: >-
+    mode is `remote`: the documented endpoint is an HTTPS URL an MCP client connects to, not a
+    package a user installs. Claude Desktop and Cursor reach it through `npx -y mcp-remote
+    <endpoint>`, which is the generic mcp-remote bridge shipped by the MCP project, NOT a KarmaCheck
+    npm package — there is no KarmaCheck package on any registry, so no install:/package: is
+    recorded. The endpoint shown is the STAGING endpoint, which is the only endpoint KarmaCheck
+    publishes; no production MCP hostname is documented and mcp.karmacheck.io does not resolve
+    (NXDOMAIN, probed 2026-08-23).
+  auth_detail: >-
+    Bearer JWT, the same token minted by POST /auth/api from an apiKey + clientAccessToken. Sent as
+    an `Authorization: Bearer <token>` header on the MCP connection.
+x-evidence:
+  probed: '2026-08-23'
+  endpoint_probe:
+    url: https://mcp-stage.karmacheck.io
+    method: 'POST tools/list (jsonrpc 2.0, anonymous)'
+    http_status: 403
+    body: '{"error":"Invalid token format, expected \"Bearer <token>\""}'
+    interpretation: >-
+      The endpoint is live and speaks the MCP auth contract, but tools/list is credential-gated, so
+      the real tool names and inputSchemas could not be enumerated anonymously. Capabilities below
+      are taken from KarmaCheck's own published documentation, not from a live tools/list.
+  nxdomain:
+  - host: mcp.karmacheck.io
+    result: NXDOMAIN
+tools_enumerable: false
+tools_note: >-
+  NOT ENUMERATED. A live tools/list requires a KarmaCheck-issued JWT. The capabilities below are
+  what KarmaCheck's own MCP guide and MCP product page document the server can do; they are
+  capability statements, not tool names, and no tool name or inputSchema has been invented.
+documented_capabilities:
+- capability: Create a case (order a background check)
+  source: https://developer.karmacheck.com/background-check-api/guides/mcp-get-started-guide
+  inputs_documented: candidate first name, last name, email address
+  note: >-
+    KarmaCheck states the MCP server prompts for first name, last name and email if any are missing.
+- capability: Order ID verification
+  source: https://www.karmacheck.com/mcp
+- capability: Order criminal background checks (county, state, national)
+  source: https://www.karmacheck.com/mcp
+- capability: Order motor vehicle records (MVR) checks
+  source: https://www.karmacheck.com/mcp
+- capability: List cases and filter by status / required candidate action
+  source: https://developer.karmacheck.com/background-check-api/guides/mcp-get-started-guide
+- capability: Get the detailed status and timeline of a specific case
+  source: https://developer.karmacheck.com/background-check-api/guides/mcp-get-started-guide
+- capability: Recurring monitoring — re-run MVR checks for candidates not checked within a window
+  source: https://developer.karmacheck.com/background-check-api/guides/mcp-get-started-guide
+clients_documented:
+- client: Claude Desktop
+  requires: Node.js 22+
+  config: claude_desktop_config.json
+- client: Cursor
+  requires: Node.js 22+
+  config: mcp.json
+sandbox:
+  note: >-
+    MCP testing runs against the KarmaCheck sandbox. Test SSN 111-22-3333 returns CLEAR/COMPLETE
+    results and 333-22-1111 returns NEEDS REVIEW; all other SSNs are blocked in the sandbox. Each
+    order needs a unique candidate email, so KarmaCheck recommends a plus-addressed timestamp such
+    as test+20250808T1530@test.com.
+  source: https://developer.karmacheck.com/background-check-api/guides/mcp-get-started-guide
+provider_guidance:
+  data_handling: >-
+    KarmaCheck warns that because background checks involve PII and at times PHI, integrators should
+    use enterprise-grade LLMs with secure tool-calling. It names GPT-5 (ChatGPT Enterprise or Azure
+    OpenAI), Anthropic Claude Opus/Sonnet via Amazon Bedrock, Amazon Nova Pro/Lite, Cohere Command
+    R+ and Google Gemini 1.5 Pro via Vertex AI.
+  contact: mcp@karmacheck.com
+other_mcp_surfaces:
+- name: KarmaCheck documentation MCP server (Mintlify)
+  endpoint: https://developer.karmacheck.com/mcp
+  first_party: false
+  vendor: Mintlify
+  auth: none (anonymous tools/list succeeds)
+  probed_status: 200
+  tools:
+  - search_karma_check
+  - query_docs_filesystem_karma_check
+  - submit_feedback
+  note: >-
+    This is the docs platform's search MCP that ships with KarmaCheck's Mintlify documentation site.
+    It searches documentation; it CANNOT order or read a background check. It is recorded here so it
+    is not mistaken for the product MCP server above. Its OAuth metadata is what
+    well-known/karmacheck-oauth-authorization-server.json describes (scope mcp:search).

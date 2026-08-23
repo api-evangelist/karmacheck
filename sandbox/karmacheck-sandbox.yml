@@ -1,0 +1,125 @@
+generated: '2026-08-23'
+method: searched
+source: https://developer.karmacheck.com/background-check-api/overview/api/environments
+published: true
+model: separate-host
+summary: >-
+  KarmaCheck separates test from live by HOST, not by key prefix. The same credential shape (apiKey
+  + clientAccessToken exchanged for a JWT) is used in both; which environment you are in is decided
+  by which base URL you call. Credentials are issued per environment by an account manager, so a
+  developer cannot self-serve a sandbox key.
+environments:
+- name: staging
+  role: sandbox
+  api_base_url: https://api-stage.karmacheck.io
+  dashboard: https://app-stage.karmacheck.com
+  mcp_endpoint: https://mcp-stage.karmacheck.io
+- name: production
+  role: live
+  api_base_url: https://api.karmacheck.io
+  dashboard: https://app.karmacheck.com
+  mcp_endpoint: null
+key_prefixes: null
+key_prefix_note: >-
+  No test-vs-live key prefix is published. Nothing in a KarmaCheck credential tells you which
+  environment it belongs to — only the host does. That is a real hazard for an agent: the same code
+  path pointed at the wrong base URL orders a real, billable, FCRA-regulated consumer report.
+access:
+  self_serve: false
+  detail: Contact your KarmaCheck account manager to obtain API credentials for an environment.
+limitations:
+- >-
+  Candidate emails are blocked from leaving the sandbox. All notification email, including candidate
+  onboarding invitations, is redirected to a shared internal inbox; forwarding to your own address
+  must be set up by KarmaCheck on request.
+- >-
+  For MCP sandbox accounts, order email is sent to the account's default signup address rather than
+  the test candidate address.
+- All SSNs other than the two predefined values are blocked in the sandbox.
+- All screenings other than those simulated below remain in a pending status.
+test_data:
+  ssns:
+  - value: 111-22-3333
+    meaning: Returns cleared / complete results for the simulated services listed below.
+  - value: 333-22-1111
+    meaning: Returns results or records that require review (needs review).
+  candidate_email:
+    rule: >-
+      Email address is the unique identifier for a candidate, so every order needs a distinct one.
+      KarmaCheck recommends plus-addressing with a timestamp.
+    example: test+20250808T1530@test.com
+  named_fixtures:
+  - service: International Criminal Record Check
+    input: 'Name: Andrew McLeod; Date of birth: March 4, 1987'
+    result: clear
+  - service: International Criminal Record Check
+    input: 'Name: Andrew McLeod; any other date of birth'
+    result: consider
+  - service: Canadian Criminal Record Check
+    input: any data except the name Will Nettke
+    result: clear
+  - service: Canadian Criminal Record Check
+    input: 'Name: Will Nettke'
+    result: consider
+  - service: Canadian Motor Vehicle Record Check
+    input: any driver's licence not issued in British Columbia
+    result: clear
+  - service: Canadian Motor Vehicle Record Check
+    input: driver's licence issued in British Columbia
+    result: consider
+  - service: Professional licence verifications (CNM, CNP, CNS, CRNA, PN, RN APRN)
+    input: any fictitious licence
+    result: consider
+simulated_services:
+- category: Identity verification
+  services:
+  - name: SSN Trace
+    status: clear
+    requires: 'SSN: 111-22-3333'
+  - name: International Identity Verification
+    status: acknowledge
+    requires: any data
+- category: Criminal check
+  services:
+  - name: OIG Exclusions Search
+    status: clear
+    requires: any data
+  - name: National Criminal Search
+    status: clear
+    requires: 'SSN: 111-22-3333'
+  - name: Global Watchlist Search
+    status: clear
+    requires: 'SSN: 111-22-3333'
+  - name: Sex Offender Search
+    status: clear
+    requires: 'SSN: 111-22-3333'
+- category: Motor vehicle record check
+  services:
+  - name: Motor Vehicle Report
+    status: acknowledge
+    requires: 'SSN: 111-22-3333'
+- category: Occupational health screening
+  services:
+  - name: Any physical screening (except Lab - CBC With Differential; Audiogram Annual/Baseline
+      supports acknowledge only)
+    status: acknowledge / consider
+    requires: '111-22-3333 for acknowledge, 333-22-1111 for consider'
+  - name: Any drug screening
+    status: clear / consider
+    requires: '111-22-3333 for clear, 333-22-1111 for consider'
+  - name: Any TB test
+    status: acknowledge / consider
+    requires: '111-22-3333 for acknowledge, 333-22-1111 for consider'
+  - name: Any immunization (except Hepatitis B Surface Antigen Titer; Hepatitis C Titer)
+    status: acknowledge / consider
+    requires: '111-22-3333 for acknowledge, 333-22-1111 for consider'
+  - name: Hepatitis C Titer
+    status: acknowledge / consider
+    requires: '333-22-1111 for acknowledge, 111-22-3333 for consider — INVERTED relative to every
+      other occupational health screening'
+test_clocks: false
+fixture_triggers: false
+note: >-
+  No time simulation / test clock and no fixture-trigger API. Results are driven purely by the input
+  values above, and everything not listed stays pending, so a sandbox integration cannot rehearse a
+  full case completion for most of the catalog.

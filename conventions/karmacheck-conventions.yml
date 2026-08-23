@@ -1,0 +1,217 @@
+generated: '2026-08-23'
+method: searched
+source: >-
+  https://developer.karmacheck.com/background-check-api/overview/api/api-overview +
+  .../authentication + .../errors + .../environments +
+  https://developer.karmacheck.com/background-check-api/reference/webhooks/webhooks-overview +
+  derived from openapi/karmacheck-api-openapi.yml
+auth:
+  style: bearer-jwt
+  header: 'Authorization: Bearer <token>'
+  mint_operation: post-auth-api
+  mint_path: POST /auth/api
+  credentials: apiKey + clientAccessToken, both issued by KarmaCheck
+  expiry: >-
+    Tokens DO NOT EXPIRE. KarmaCheck states tokens can be invalidated to revoke access, but there is
+    no documented TTL, no refresh flow and no expiry claim contract. A long-lived non-expiring
+    bearer token is the single most consequential convention on this API for an agent to handle.
+  query_string_forbidden: true
+  detail: KarmaCheck explicitly instructs integrators not to pass the token in the query string.
+  scopes: none
+  tenancy: >-
+    A clientAccessToken scopes the resulting JWT to one GROUP within one company. Multi-group access
+    means holding multiple tokens, not one token with broader scope.
+  see: authentication/karmacheck-authentication.yml
+transport:
+  https_only: true
+  detail: Calls over plain HTTP or without valid authentication are refused.
+  request_content_type: application/json
+  response_content_type: application/json
+  html_accept_note: >-
+    Some endpoints return a plain-text/HTML body rather than JSON — notably the report and document
+    download-URL endpoints, which expect `Accept: text/html` and return the URL itself.
+attribution:
+  header: karmacheck-on-behalf-of
+  value: an email address
+  applies_to: post-case-create
+  semantics: >-
+    Optional. When the header carries an email address matching a KarmaCheck user, the case is
+    attributed to that user rather than to the API token. If no such user exists the header is
+    silently ignored. If the user exists but lacks access to the requested package, THE CALL FAILS
+    even though the token itself would have been allowed — a header that can only ever reduce
+    permissions, never widen them.
+idempotency:
+  supported: false
+  header: null
+  detail: >-
+    No idempotency key, no Idempotency-Key header, no request-replay contract and no dedupe token is
+    documented anywhere in the KarmaCheck reference. This matters more here than on a typical API:
+    POST /case/create orders a billable, FCRA-regulated consumer report, and the only guard against
+    a duplicate order is server-side — a 409 Conflict returned when a case already exists for the
+    same candidate email within the same group. That 409 is a de-facto uniqueness constraint on
+    (candidate email, group), not an idempotency mechanism: it returns the conflicting case rather
+    than the original result, and it does not protect any other write operation.
+  de_facto_guard:
+    operation: post-case-create
+    status: 409
+    key: candidate email address within a group
+pagination:
+  supported: partial
+  style: page-number-in-request-body
+  params:
+    envelope: listMetadata
+    page: page (0-based)
+    pageSize: pageSize
+  defaults:
+    page: 0
+    pageSize: 10
+  applies_to:
+  - post-vbook-search
+  detail: >-
+    Pagination exists on exactly ONE of 69 operations. POST /vbook/search accepts an optional
+    `listMetadata` object in the request body carrying `page` and `pageSize`, defaulting to page 0
+    and pageSize 10 when omitted. Every other list operation — GET /case/list, GET /case/list/all,
+    GET /package/min/list, GET /service/cplc/list, GET /service/cplc/list/all,
+    GET /company/user/list — declares NO page, limit, offset or cursor parameter and returns no
+    pagination envelope. A consumer with a large case volume has no documented way to page the case
+    list, which is the list they will actually need to page.
+  response_envelope: none
+filtering:
+  detail: >-
+    Filtering is expressed mostly as distinct PATHS rather than query parameters — /case/list vs
+    /case/list/all, /service/cplc/list vs /service/cplc/list/all,
+    /case/id/{caseId}/services/{serviceType}. GET /case/list/all is the exception and does take two
+    query filters, `userId` and `packageId`.
+field_expansion:
+  supported: false
+sparse_fieldsets:
+  supported: false
+metadata:
+  supported: partial
+  fields:
+  - apiTrackingCode
+  - apiTrackingUser
+  detail: >-
+    Two free-form tracking identifiers can be carried on a case and are echoed back on every webhook
+    envelope. This is the closest thing to a customer metadata facility.
+request_id_tracing:
+  supported: false
+  detail: >-
+    No request-id or correlation-id response header is documented. On the webhook side there IS a
+    per-message identifier (`webhook-id`, stable across retries) and a `messageId` in the envelope,
+    so async deliveries are traceable even though synchronous requests are not.
+versioning:
+  detail: See lifecycle/karmacheck-lifecycle.yml — no version in path, header or media type.
+error_envelope:
+  format: bespoke-json
+  rfc9457: false
+  shape:
+    message: string or array of strings
+    error: string — the HTTP reason phrase
+    statusCode: integer
+  variations: >-
+    NOT uniform. 404 can return a bare string body ("Invalid case") rather than the JSON envelope,
+    and 409 returns a completely different shape keyed on httpStatus plus a `cases` array of the
+    conflicting cases. An agent parsing errors must branch on status before parsing.
+  see: errors/karmacheck-problem-types.yml
+rate_limit_signaling:
+  supported: false
+  detail: >-
+    No rate limit is published and no X-RateLimit-*, RateLimit-* or Retry-After response header is
+    documented for the REST API. See rate-limits/karmacheck-rate-limits.yml.
+  webhook_side: >-
+    The webhook DELIVERY side does publish a full backoff contract — 15 second ack timeout and an
+    8-attempt retry ladder. That is KarmaCheck retrying you, not you retrying KarmaCheck.
+dry_run_mode:
+  supported: false
+  detail: >-
+    No dry-run, preview, validate-only or simulate flag on any write operation. The nearest
+    equivalent is the whole staging environment plus predefined test SSNs (see
+    sandbox/karmacheck-sandbox.yml), which is an environment-level rehearsal, not a per-request one.
+reversibility:
+  grade: verified
+  applicable: true
+  summary: >-
+    KarmaCheck ships an explicit reversal path for the two most consequential write surfaces — a
+    case order and an archive — and, unusually, documents the WINDOW for the archive path in state
+    terms rather than leaving it implicit. The cancel path is real but its window is bounded by case
+    state rather than by a clock.
+  surfaces:
+  - write_operation: post-case-create
+    write_path: POST /case/create
+    consequence: >-
+      Orders a billable, FCRA-regulated consumer report on a named individual and emails that person
+      an invitation.
+    reversal_operation: post-case-id-caseId-cancel
+    reversal_path: POST /case/id/{caseId}/cancel
+    window_stated: true
+    window: >-
+      State-bounded, not time-bounded. KarmaCheck's case lifecycle table documents cancellability
+      per status: a case may be canceled while Pending, and canceling is what happens when a case is
+      archived in secondary status "Waiting for Authorization", "Authorization in Progress", or
+      primary status "Blocked". Once a case reaches Complete/Consider (needs review) it can still be
+      canceled "unless adverse action is initiated or another screening is added to the case"; once
+      Placed it can be canceled "unless another screening is added to the case"; once Canceled it
+      cannot be reopened unless KarmaCheck is explicitly asked to reopen it.
+    window_source: https://developer.karmacheck.com/background-check-api/overview/case-lifecycle
+    caveat: >-
+      Cancellation reverses the ORDER, not the disclosure. Nothing in the documentation states that
+      cancelling refunds a passthrough fee already incurred at the data source, and KarmaCheck's own
+      passthrough-fee page says those fees are set by third parties and billed through.
+  - write_operation: post-case-id-caseId-add-services
+    write_path: POST /case/id/{caseId}/add/services
+    consequence: Adds additional billable screenings to an existing case.
+    reversal_operation: post-case-id-caseId-service-cancel
+    reversal_path: POST /case/id/{caseId}/services/cancel
+    window_stated: false
+    window: >-
+      Not stated. The case lifecycle table notes that ADDING a screening can itself remove
+      cancellability from the parent case, but no window is documented for cancelling an individual
+      service.
+  - write_operation: post-case-archive-caseId
+    write_path: POST /case/archive/{caseId}
+    consequence: Archives a case, removing it from the active working set.
+    reversal_operation: post-case-unarchive-caseId
+    reversal_path: POST /case/unarchive/{caseId}
+    window_stated: true
+    window: >-
+      Symmetric and unbounded — archive and unarchive are a matched pair with no documented expiry.
+      The one-way consequence is that archiving a case whose secondary status is "Waiting for
+      Authorization" or "Authorization in Progress", or whose primary status is Blocked, ALSO
+      cancels it, and that cancellation is not undone by unarchiving.
+    window_source: https://developer.karmacheck.com/background-check-api/overview/case-lifecycle
+  - write_operation: post-case-data-id-caseDataId-search-id-searchId-cancel
+    write_path: POST /case/data/id/{caseDataId}/search/id/{searchId}/cancel
+    consequence: Cancels an individual case-data search record.
+    reversal_operation: null
+    window_stated: false
+    note: This IS a reversal operation; it has no inverse of its own.
+  - write_operation: post-testimony-create-case-id-caseId
+    write_path: POST /testimony/create/case/id/{caseId}
+    reversal_operation: delete-testimony-id-testimonyId-detach-case-id-caseId
+    reversal_path: DELETE /testimony/id/{testimonyId}/detach/case/id/{caseId}
+    window_stated: false
+  irreversible:
+  - operation: post-case-id-caseId-action-preadverse
+    path: POST /case/id/{caseId}/action/preadverse
+    note: >-
+      Initiating pre-adverse action has no documented reversal, and the case lifecycle table states
+      that once adverse action is initiated the case can no longer be canceled. This is the
+      one-way door in the API.
+  - operation: put-case-id-caseId-action-beginprocessing
+    path: PUT /case/id/{caseId}/action/beginprocessing
+    note: >-
+      No documented un-begin. Once processing starts, screenings are dispatched to data sources.
+  - operation: 'the disclosure acknowledgement family (FCRA, e-signature, Canada, international,
+      custom, location-specific)'
+    note: >-
+      Each acknowledgement creates a case data record and generates a signed PDF for audit. No
+      un-acknowledge operation exists, which is correct — a legal acknowledgement should not be
+      retractable through an API.
+cross_links:
+  errors: errors/karmacheck-problem-types.yml
+  lifecycle: lifecycle/karmacheck-lifecycle.yml
+  authentication: authentication/karmacheck-authentication.yml
+  rate_limits: rate-limits/karmacheck-rate-limits.yml
+  sandbox: sandbox/karmacheck-sandbox.yml
+  webhooks: asyncapi/karmacheck-webhooks.yml

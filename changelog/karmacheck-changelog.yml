@@ -1,0 +1,99 @@
+generated: '2026-08-23'
+method: searched
+source: https://developer.karmacheck.com/background-check-api/overview/changelog
+scheme: dated
+scheme_note: >-
+  KarmaCheck publishes a dated, reverse-chronological API changelog. There is no semantic version
+  string on entries; info.version in the OpenAPI is a flat "1.0" and there is no version segment in
+  the URL path, so a date is the only version coordinate a consumer has.
+current_version: '1.0'
+versioning_in_path: false
+entries:
+- date: '2026-07-07'
+  breaking: false
+  additions:
+  - Added `authorization` as a supported contact type to `orderConfig.contacts` on `POST /case/create`
+    and `POST /case/id/{caseId}/add/services`.
+  - Added support for `codt-drug-reason-for-test` and `codt-drug-testing-authority` order data types
+    for DOT drug screenings on `POST /case/create` and `POST /case/id/{caseId}/add/services`.
+- date: '2025-12-19'
+  breaking: false
+  additions:
+  - Added support for Intelligent Document Processing with the new `service-intelligent-document-process`
+    service.
+- date: '2025-08-07'
+  breaking: false
+  additions:
+  - Added support for order data `CaseOrderDataOHSServiceSubstitutions`, optionally supplied on
+    `POST /case/create` and `POST /case/id/{caseId}/add/services`.
+- date: '2025-07-17'
+  breaking: false
+  additions:
+  - Added the `POST /case/data/id/{caseDataId}/search/id/{searchId}/cancel` endpoint to cancel
+    individual case data search records.
+  - Updated `DetailsEmployment` and `DetailsEducation` to include a `searchId` field.
+- date: '2025-06-23'
+  breaking: false
+  additions:
+  - Added an optional `fileFormat` property to `DocumentCreateRecords` for `POST /document/secure/create`.
+- date: '2025-06-05'
+  breaking: false
+  additions:
+  - Added support to search the verification book via `POST /vbook/search`.
+- date: '2025-06-02'
+  breaking: false
+  additions:
+  - Added an optional `secureDocumentIds` property to `CaseOrderDataEmployment`,
+    `CaseOrderDataEducation` and `CaseOrderDataCPLC`.
+- date: '2024-11-21'
+  breaking: true
+  breaking_note: >-
+    Validation was ADDED to existing name fields, restricting them to letters, numbers, hyphen,
+    apostrophe, comma, period and underscore. Payloads that previously succeeded with other
+    characters now fail, so this is behaviour-breaking for existing integrators even though no field
+    was removed. KarmaCheck does not label it as breaking.
+  highlights:
+  - Name-field validation added for create case, aliases and update candidate info endpoints,
+    applying to `CreateCase` and `CaseOrderDataAlias`.
+- date: '2024-11-19'
+  breaking: false
+  additions:
+  - Added an optional `staffingAgency` property (100 character max) to `CaseOrderDataEmployment`,
+    `TestimonyEmployment` and `TestimonyEmploymentCreate`.
+- date: '2024-08-19'
+  breaking: false
+  additions:
+  - Added the `jurisdictions` array to county criminal search details in the response of
+    `GET /case/id/{caseId}/data/{serviceTypeId}`.
+- date: '2024-08-05'
+  breaking: false
+  additions:
+  - Added support for shipment order data to `POST /case/create` and `POST /case/id/{caseId}/add/services`.
+  - Added the `GET /shipment/mask/list` endpoint.
+- date: '2024-06-25'
+  breaking: false
+  additions:
+  - Added the `GET /company/user/list` endpoint to retrieve users by groups within a company.
+- date: '2024-05-29'
+  breaking: false
+  additions:
+  - Added support for Professional License and Certification order data to `POST /case/create` and
+    `POST /case/id/{caseId}/add/services`.
+- date: '2024-03-04'
+  breaking: false
+  additions:
+  - Added `statusId` to each individual record within employment and education verification details
+    in `GET /case/id/{caseId}/data/{serviceTypeId}`.
+  - Added endpoints to request and acknowledge custom dynamic disclosures.
+analysis:
+  entries_captured: 14
+  window: 2024-03-04 to 2026-07-07
+  cadence: >-
+    Irregular. Eleven entries land in 2024-2025 and one in the 14 months since; the most recent
+    entry is 2026-07-07.
+  removals_recorded: 0
+  deprecations_recorded: 0
+  note: >-
+    In 14 published entries KarmaCheck has never recorded a removal or a deprecation — every entry
+    is additive. That is consistent with the absence of any published deprecation policy or Sunset
+    header contract (see lifecycle/karmacheck-lifecycle.yml).

@@ -1,0 +1,52 @@
+generated: '2026-08-23'
+method: searched
+source: >-
+  https://developer.karmacheck.com/background-check-api/overview/changelog +
+  https://developer.karmacheck.com/background-check-api/overview/case-lifecycle +
+  https://developer.karmacheck.com/background-check-api/overview/api/environments
+versioning:
+  scheme: none-in-contract
+  current_version: '1.0'
+  in_path: false
+  in_header: false
+  detail: >-
+    The KarmaCheck API carries no version segment in its paths (/case/create, not /v1/case/create),
+    no version header is documented, and info.version in the contract is a flat "1.0" that has not
+    moved across 14 dated changelog entries. Change is communicated only by the dated changelog. A
+    consumer has no in-band way to pin or negotiate a version.
+deprecation_policy:
+  published: false
+  detail: >-
+    No deprecation policy page, no sunset policy and no documented use of the RFC 8594 Sunset or
+    Deprecation response headers. No operation in the 69-operation contract carries
+    `deprecated: true`. In 14 changelog entries KarmaCheck has never announced a removal.
+  sunset_header: false
+  deprecated_operations: []
+status_page:
+  published: false
+  detail: >-
+    No status page found. status.karmacheck.com does not resolve (NXDOMAIN, probed 2026-08-23) and
+    no status or uptime link appears in the site navigation, the footer or the developer portal.
+sla:
+  published: false
+  detail: >-
+    No public SLA or uptime commitment. Turnaround expectations are expressed per screening in the
+    service lifecycle documentation rather than as an availability guarantee.
+environments:
+- name: production
+  base_url: https://api.karmacheck.io
+  dashboard: https://app.karmacheck.com
+- name: staging
+  base_url: https://api-stage.karmacheck.io
+  dashboard: https://app-stage.karmacheck.com
+  role: sandbox
+resource_lifecycle:
+  note: >-
+    KarmaCheck does document a rich lifecycle for the RESOURCES the API manages, even though it
+    publishes none for the API itself. Cases move through Pending, Blocked, Complete, Consider,
+    Adjudicated, Placed and Canceled with a secondary status, and each individual service (case
+    data) carries its own status track.
+  docs:
+  - https://developer.karmacheck.com/background-check-api/overview/case-lifecycle
+  - https://developer.karmacheck.com/background-check-api/overview/service-lifecycle
+  - https://developer.karmacheck.com/background-check-api/reference/case-status

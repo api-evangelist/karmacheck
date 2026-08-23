@@ -1,0 +1,296 @@
+generated: '2026-08-23'
+method: derived
+source: >-
+  openapi/karmacheck-api-openapi.yml (125 component schemas, 69 operations) +
+  https://developer.karmacheck.com/background-check-api/overview/case-lifecycle +
+  https://developer.karmacheck.com/background-check-api/overview/service-lifecycle
+summary: >-
+  The KarmaCheck domain has one spine: a COMPANY contains GROUPS, a group orders a CASE for a
+  CANDIDATE against a PACKAGE, and the case fans out into many CASE DATA records — one per
+  individual screening (service). Everything else hangs off that spine: order data supplies the PII
+  a screening needs, testimony records the candidate's self-reported history, secure documents carry
+  the evidence, and legal acknowledgements carry the FCRA paper trail. Identifiers are opaque UUIDs
+  with NO type prefix, which means an id alone does not tell you what it is.
+id_convention:
+  format: UUID v4
+  prefixed: false
+  note: >-
+    KarmaCheck uses bare UUIDs everywhere (caseId, candidateId, packageId, serviceTypeId,
+    secureDocumentId, cplcId). Unlike prefixed-id APIs there is no way to tell a caseId from a
+    candidateId by looking at it, so an agent must track which field a value came from.
+entities:
+- name: Case
+  schema: CaseSummary
+  description: >-
+    The order. One background check report on one candidate, ordered against one package by one
+    group. Carries a primary status, a secondary status and a result type.
+  key: id
+  operations:
+    create: post-case-create
+    read: get-case-id-caseid
+    list:
+    - get-case-list
+    - get-case-list-all
+    cancel: post-case-id-caseId-cancel
+    archive: post-case-archive-caseId
+    unarchive: post-case-unarchive-caseId
+  relationships:
+  - has_one: Candidate
+    via: candidateId
+  - has_one: Package
+    via: packageId
+  - has_many: CaseData
+    via: caseId
+  - has_many: Service
+    via: get-case-id-caseId-services
+  - has_one: Invitation
+    via: caseInvitationId
+  - has_one: Group
+    via: groupProfileId
+  - has_one: Company
+    via: companyId
+  - has_one: AdverseAction
+    via: adverseActionId
+  - belongs_to: Case
+    via: replaceCaseId
+    note: A case can replace an earlier case; the replaced case moves to Canceled.
+  status_model:
+    primary: CaseStatus (Pending, Blocked, Complete, Consider, Adjudicated, Placed, Canceled)
+    secondary: CaseSecondaryStatus (e.g. Waiting for Authorization, Authorization in Progress)
+    result: CaseResult (Open, Placed, ...)
+    docs: https://developer.karmacheck.com/background-check-api/reference/case-status
+  timestamps:
+  - orderedStamp
+  - beginOnboardingStamp
+  - completedOnboardingStamp
+  - beginProcessingStamp
+  - completedInitialProcessingStamp
+  - completedLatestProcessingStamp
+- name: CaseData
+  schema: CaseData
+  description: >-
+    One individual screening on a case — the unit that actually gets a result. This is the most
+    polymorphic object in the model: a single CaseData carries exactly one of 22 `Details*` payloads
+    selected by its service category.
+  key: id
+  operations:
+    read: get-case-id-caseid-data-servicetypeid
+    cancel_search: post-case-data-id-caseDataId-search-id-searchId-cancel
+    pdf: get-case-id-caseId-data-serviceId-pdf
+  relationships:
+  - belongs_to: Case
+    via: caseId
+  - has_one: Service
+    via: serviceId
+  - has_one: ServiceType
+    via: serviceTypeId
+  - has_one: ServiceCategory
+    via: serviceCategoryId
+  - has_one: CaseDataStatus
+    via: statusId
+  - has_one: Candidate
+    via: candidateId
+  polymorphic_details:
+  - DetailsSSN
+  - DetailsIdentity
+  - DetailsNationalCriminal
+  - DetailsFederalCriminal
+  - DetailsCountyCriminal
+  - DetailsStateCriminalCourt
+  - DetailsStateCriminalDatabase
+  - DetailsSexOffender
+  - DetailsGlobalWatchlist
+  - DetailsOIG
+  - DetailsFACIS
+  - DetailsInternational
+  - DetailsMotorVehicle
+  - DetailsEducation
+  - DetailsEmployment
+  - DetailsCPLC
+  - DetailsDrug
+  - DetailsOHS
+  - DetailsLegal
+  - DetailsMaskShipment
+  - DetailsPayment
+  - DetailsOtherService
+- name: Candidate
+  description: The person being screened. Email address is the practical unique key within a group.
+  key: candidateId
+  operations:
+    read: get-candidate-info-case-id-caseId
+    update: post-candidate-id-candidateId-update-case-id-caseId
+    countries: get-candidate-countries
+  relationships:
+  - has_many: Case
+    via: candidateId
+  - has_many: Testimony
+  - has_one: Invitation
+  note: >-
+    Candidate uniqueness is enforced on EMAIL within a group — creating a second case for the same
+    email in the same group returns 409 with the conflicting cases.
+- name: Package
+  schema: CPLCDefinition / ServiceGroupServices
+  description: A named bundle of services that a case is ordered against.
+  key: packageId
+  operations:
+    read: get-package-min-id-packageid
+    list: get-package-min-list
+    services: get-package-id-packageId-services
+    services_by_type: get-package-id-packageId-services-serviceType
+  relationships:
+  - has_many: Service
+- name: Service
+  description: >-
+    A screening type in the catalog, organised by category and subcategory. Its lifecycle differs by
+    service type, category and subcategory.
+  key: serviceTypeId
+  operations:
+    for_case: get-case-id-caseId-services
+    by_type: get-case-id-caseId-services-serviceType
+  relationships:
+  - has_one: ServiceCategory
+    via: serviceCategoryId
+  - has_one: ServiceSubCategory
+    via: serviceSubCategoryId
+  docs: https://developer.karmacheck.com/background-check-api/reference/service
+- name: CPLC
+  schema: CPLC / CPLCDefinition
+  description: Certification, Professional License and Credential definition.
+  key: cplcId
+  operations:
+    list: get-service-cplc-list
+    list_all: get-service-cplc-list-filter
+    read: get-service-cplc-id-cplcId
+    for_case: get-service-cplc-case-id-caseId
+- name: Testimony
+  schema: Testimony
+  description: >-
+    The candidate's self-reported history — addresses, employment, education, driver's licence,
+    professional licences, parental consent. This is the input KarmaCheck verifies against.
+  key: testimonyId
+  operations:
+    create: post-testimony-create-case-id-caseId
+    read: get-testimony-case-caseId
+    update: post-testimony-id-testimonyId-update-case-id-caseId
+    detach: delete-testimony-id-testimonyId-detach-case-id-caseId
+  relationships:
+  - belongs_to: Case
+    via: caseId
+  - has_one: TestimonyType
+    via: testimonyTypeId
+  subtypes:
+  - TestimonyAddress
+  - TestimonyEmployment
+  - TestimonyEducation
+  - TestimonyDriversLicense
+  - TestimonyCustomProfessionalLicense
+  - TestimonyParentalConsent
+  - TestimonyContact
+- name: SecureDocument
+  schema: DocumentRecords / DocumentCreateRecords / DocumentFiles / DocumentList
+  description: >-
+    Evidence files attached to a case. Uploaded through a two-step flow — create the record, then
+    upload to a generated URL.
+  key: secureDocumentId
+  operations:
+    create_records: post-document-secure-create
+    upload: post-document-secure-upload
+    download_url: get-document-secure-id-secureDocumentId-download-url
+    list: get-document-secure-list-case-id-caseId
+    mime_types: get-document-secure-mimetypes
+    types: get-document-secure-type-list
+  relationships:
+  - belongs_to: Case
+    via: caseId
+  - has_one: DocumentType
+    via: documentTypeId
+- name: Invitation
+  description: The candidate-facing onboarding invitation for a case.
+  key: caseInvitationId
+  operations:
+    create: post-invitation-candidate-create
+    read: get-invitation-case-caseId
+    by_token: get-candidate-invitation-token-invitationToken
+    resend: post-case-id-caseId-action-resendinvite
+    refresh: put-case-id-caseId-action-refreshinvite
+    one_time_link: get-case-id-caseid-candidate-id-candidateId-url
+  relationships:
+  - belongs_to: Case
+  - has_one: InvitationStatus
+    via: invitationStatusId
+- name: LegalAcknowledgement
+  schema: DetailsLegal / LegalAcknowledgmentDisclosure(s) / LegalAcknowledgmentSignature
+  description: >-
+    The FCRA and disclosure paper trail. Each acknowledgement creates a case data record and
+    generates a downloadable signed PDF.
+  operations:
+    status: get-case-id-caseId-legal-status-legalType
+    fcra: post-case-id-caseId-fcra-language
+    esignature: post-case-id-caseId-esig-language
+    canada: post-case-id-caseId-canadadisclosure-language
+    international: post-case-id-caseId-intldisclosure-language
+    custom: post-case-id-caseId-customdisclosure-language
+    location_specific: post-case-id-caseId-disclosureType-language
+  relationships:
+  - belongs_to: Case
+  - has_one: LegalType
+- name: AdverseAction
+  description: The pre-adverse and adverse action workflow that follows a case needing review.
+  key: adverseActionId
+  operations:
+    initiate: post-case-id-caseId-action-preadverse
+    document: get-case-id-caseId-preadverse-type-pdf
+    download: get-case-id-caseId-preadverse-type-pdf-download
+  relationships:
+  - belongs_to: Case
+  note: >-
+    Initiating adverse action makes the parent case non-cancellable — see the reversibility block in
+    conventions/karmacheck-conventions.yml.
+- name: OrderConfig
+  schema: OrderConfig / Configuration / ServiceConfigs
+  description: >-
+    Per-order policy configuration: contacts, alias handling, drug policy, education and employment
+    verification depth, Quantiferon/T-Spot handling, OHS drug passport expiry.
+  operations:
+    read: get-config-case-id-caseId
+  relationships:
+  - belongs_to: Case
+  - has_many: Contact
+- name: VerificationBookItem
+  schema: PublicVerificationBookItem / SearchDetails
+  description: >-
+    The verification book — a searchable registry of verification sources. The ONLY operation in the
+    API that paginates.
+  operations:
+    search: post-vbook-search
+- name: Jurisdiction
+  schema: JurisdictionCounties / JurisdictionsFederalDistrictCourtAndCounty
+  description: County, state and federal court jurisdictions used to scope criminal searches.
+  operations:
+    find: post-jurisdiction-find-all
+- name: User
+  schema: UserGetUserByGroup
+  description: Users within a company, retrievable by group profile.
+  operations:
+    list: get-company-user-list
+- name: Group
+  key: groupProfileId
+  description: >-
+    The tenancy boundary. A JWT is scoped to one group; case uniqueness, webhook subscriptions and
+    package access are all evaluated per group.
+  relationships:
+  - belongs_to: Company
+  - has_many: Case
+- name: Company
+  key: companyId
+  relationships:
+  - has_many: Group
+event_surface:
+  note: >-
+    Two entities emit webhooks — Case (case.statuschange) and CaseData (casedata.statuschange). No
+    other entity has an event. See asyncapi/karmacheck-webhooks.yml.
+statistics:
+  component_schemas: 125
+  entities_modelled: 17
+  polymorphic_detail_types: 22
+  operations: 69

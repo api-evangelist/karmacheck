@@ -1,0 +1,94 @@
+generated: '2026-08-23'
+method: probed
+source: live GET of /.well-known/* on every apis.yml + OpenAPI servers[] host
+hit_count: 2
+note: >-
+  Two real documents are served, both on the documentation host and both belonging to the MCP
+  authorization surface: RFC 8414 oauth-authorization-server and RFC 9728 oauth-protected-resource.
+  No security.txt, no RFC 9727 api-catalog and no agent card is served on any host. IMPORTANT:
+  app.karmacheck.com is a single-page-app catch-all that answers HTTP 200 with the identical
+  198,222-byte HTML application shell for EVERY /.well-known/* path probed, including paths that
+  cannot exist; those 200s are recorded below as soft_404 and are NOT counted as documents. The two
+  API hosts (api.karmacheck.io, api-stage.karmacheck.io) answer 403 from an edge policy to every
+  unauthenticated request, so nothing can be observed there anonymously.
+hosts:
+- host: https://developer.karmacheck.com
+  documents:
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: karmacheck-oauth-authorization-server.json
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    file: karmacheck-oauth-protected-resource.json
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/security.txt
+    status: 302
+  - path: /.well-known/openid-configuration
+    status: 302
+  - path: /.well-known/ai-plugin.json
+    status: 302
+  - path: /.well-known/agent-card.json
+    status: 302
+  - path: /.well-known/agent.json
+    status: 302
+- host: https://www.karmacheck.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: https://api.karmacheck.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 403
+  - path: /.well-known/oauth-authorization-server
+    status: 403
+  - path: /.well-known/api-catalog
+    status: 403
+  - path: /.well-known/agent-card.json
+    status: 403
+  - path: /.well-known/agent.json
+    status: 403
+- host: https://api-stage.karmacheck.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 403
+  - path: /.well-known/oauth-authorization-server
+    status: 403
+  - path: /.well-known/api-catalog
+    status: 403
+  - path: /.well-known/agent-card.json
+    status: 403
+  - path: /.well-known/agent.json
+    status: 403
+- host: https://mcp-stage.karmacheck.io
+  documents:
+  - path: /.well-known/oauth-authorization-server
+    status: 403
+  - path: /.well-known/oauth-protected-resource
+    status: 403
+  - path: /.well-known/agent-card.json
+    status: 403
+- host: https://app.karmacheck.com
+  soft_404_control:
+    note: >-
+      Every /.well-known/* path returns HTTP 200 with the same 198222-byte SPA shell
+      (content-type text/html). No document is served; these are recorded as soft_404 and no file
+      was saved.
+    observed_status: 200
+    observed_bytes: 198222
+    content_type: text/html
+  documents: []

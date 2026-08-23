@@ -1,0 +1,36 @@
+generated: '2026-08-23'
+method: searched
+source: https://www.karmacheck.com/ (site sweep, sitemap.xml walked 2026-08-23)
+plan_count: 0
+public_pricing: false
+detail: >-
+  KarmaCheck publishes NO pricing. There is no pricing page — https://www.karmacheck.com/pricing
+  returns HTTP 404 — no /pricing entry in sitemap.xml, no rate card, no per-screening list price and
+  no plan tiers anywhere on the marketing site or the developer portal. Every commercial path is a
+  form: "Contact Us", "Get an account" and "Book a demo" all route to
+  https://contact.karmacheck.com/contact-sales, and API credentials themselves are issued by an
+  account manager rather than self-serve. Production MCP access adds a second gate on top —
+  a waitlist at https://contact.karmacheck.com/mcp-production-wl followed by contracting and
+  credentialing.
+plans: []
+what_is_published:
+- name: Passthrough fees policy
+  url: https://www.karmacheck.com/passthrough-fees-aliases
+  type: fee-disclosure
+  detail: >-
+    KarmaCheck does publish a passthrough-fee disclosure, which is a pricing MECHANIC rather than a
+    price. Third-party fees charged by courts, registries, drug testing facilities, education and
+    employment verification sources are billed through to the customer as a separate invoice line
+    item, are not set by KarmaCheck, and may change without notice. Credit card processing fees are
+    also passed through and can be avoided by paying via ACH or check.
+  implication_for_agents: >-
+    An agent ordering a screening cannot compute the cost of the call in advance from anything
+    KarmaCheck publishes. Neither the base fee nor the passthrough component is discoverable, and
+    the passthrough component is explicitly variable without notice.
+evidence:
+- url: https://www.karmacheck.com/pricing
+  status: 404
+- url: https://www.karmacheck.com/passthrough-fees-aliases
+  status: 200
+- url: https://contact.karmacheck.com/contact-sales
+  status: 200

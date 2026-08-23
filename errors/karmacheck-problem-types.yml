@@ -1,0 +1,137 @@
+generated: '2026-08-23'
+method: searched
+source: >-
+  https://developer.karmacheck.com/background-check-api/overview/api/errors +
+  derived from openapi/karmacheck-api-openapi.yml (69 operations)
+format: bespoke-json
+rfc9457: false
+rfc9457_note: >-
+  KarmaCheck does NOT use RFC 9457 / RFC 7807 problem+json. No operation in the contract declares an
+  application/problem+json response and no error carries a `type` URI, `title`, `detail` or
+  `instance`. Errors are a bespoke JSON object.
+envelope:
+  canonical:
+    message: string or array of strings — human readable; the array form carries per-field validation messages
+    error: string — the HTTP reason phrase, e.g. "Bad Request"
+    statusCode: integer — repeats the HTTP status
+  uniform: false
+  uniformity_note: >-
+    The envelope is NOT applied uniformly. 404 can return a bare text/plain string ("Invalid case")
+    with no JSON at all, and 409 returns an entirely different object keyed on `httpStatus` with a
+    `cases` array. Any client must branch on the HTTP status before attempting to parse a body.
+problem_types:
+- status: 400
+  title: Bad Request
+  meaning: >-
+    The request could not be processed, generally because a required field is missing or a field has
+    the wrong format or data type.
+  envelope: canonical
+  message_shape: array of per-field validation strings
+  example:
+    message:
+    - counties.0.state must be a string
+    error: Bad Request
+    statusCode: 400
+  remediation: >-
+    Read each string in `message` — they are dotted JSON paths into the request body and name the
+    offending field directly. Fix the payload; do not retry unchanged.
+  operations_declaring: 11
+- status: 401
+  title: Unauthorized
+  meaning: Authentication is missing or the token is not valid.
+  remediation: >-
+    Re-mint a token with POST /auth/api. Note that KarmaCheck tokens do not expire, so a 401 usually
+    means the token was invalidated (revoked) rather than aged out — re-minting with the same
+    apiKey/clientAccessToken is the correct response, but a repeat 401 means the credential itself
+    was revoked and needs an account manager.
+  operations_declaring: 3
+- status: 403
+  title: Forbidden
+  meaning: The authenticated user does not have permission to access the requested resource.
+  envelope: canonical
+  example:
+    message: You do not have access to documents for case e074241e-36e8-444b-bf55-bb4dad6d3f3d
+    error: Forbidden
+    statusCode: 403
+  remediation: >-
+    A JWT is scoped to ONE group within one company. A 403 on a case that exists usually means the
+    case belongs to a different group and needs that group's clientAccessToken. It can also mean the
+    `karmacheck-on-behalf-of` header named a user who lacks access to the requested package — in
+    which case the call fails even though the token alone would have been allowed.
+  operations_declaring: 67
+- status: 404
+  title: Not Found
+  meaning: >-
+    The resource path does not exist, commonly because an invalid resource ID was supplied in the
+    path.
+  envelope: non-standard
+  envelope_note: 'May return a bare text/plain body rather than the JSON envelope.'
+  example: Invalid case
+  remediation: >-
+    Treat as a bad identifier, not as a transient failure. Do not retry.
+  operations_declaring: 40
+- status: 409
+  title: Conflict
+  meaning: >-
+    The request conflicts with the resource's current state. The documented instance is creating a
+    case for a candidate email that already has an existing case within the same group.
+  envelope: non-standard
+  envelope_shape:
+    httpStatus: string — e.g. CONFLICT
+    cases: array of the conflicting existing cases
+  example:
+    httpStatus: CONFLICT
+    cases:
+    - existingCaseId: afe52932-7c0d-4233-93f9-ce6ee3d0bede
+      existingCaseCrStamp: '2024-05-30T00:02:12.000+00:00'
+      existingCasePackageName: Basic Check
+      existingCaseStatus: Pending
+  remediation: >-
+    This is the API's only duplicate-order guard and the closest thing it has to idempotency. Read
+    `cases[]` and decide whether to adopt the existing case rather than ordering a new one. Because
+    candidate email is the uniqueness key within a group, sandbox testing needs a unique email per
+    order — KarmaCheck recommends plus-addressed timestamps.
+  operations_declaring: 1
+  see: conventions/karmacheck-conventions.yml
+- status: 413
+  title: Payload Too Large
+  meaning: The uploaded body exceeded the accepted size.
+  remediation: Applies to the secure document upload surface. Reduce the file size or split the upload.
+  operations_declaring: 1
+- status: 422
+  title: Unprocessable Entity
+  meaning: >-
+    The request is well formed but fails a validation rule or a business rule. This is the
+    business-rule failure channel and is distinct from 400, which is a shape failure.
+  envelope: canonical
+  remediation: >-
+    Do not retry unchanged. A 422 usually means the case is in a state that forbids the action —
+    for example cancelling a case after adverse action has been initiated, or beginning processing
+    on a case whose candidate has not completed onboarding. Consult the case lifecycle table.
+  operations_declaring: 36
+- status: 500
+  title: Internal Server Error
+  meaning: A problem occurred on KarmaCheck's end.
+  remediation: >-
+    Safe to retry with backoff for READ operations. NOT safe to blind-retry POST /case/create: there
+    is no idempotency key, so a retry that follows a 500 which actually succeeded server-side will
+    either order a second billable consumer report or return 409. Prefer GET /case/list to
+    reconcile before retrying any create.
+  operations_declaring: 68
+coverage:
+  operations_total: 69
+  operations_with_4xx: 69
+  operations_with_5xx: 68
+  distinct_error_statuses: 7
+  note: >-
+    Error coverage in the contract is broad — every operation declares 403 and almost every one
+    declares 500 — but the response bodies are largely typed only by status, with a documented
+    schema on a handful of operations. The narrative error reference above is the authoritative
+    source, not the spec.
+decline_codes:
+  applicable: false
+  note: >-
+    Not a payments or authorization API. There is no decline-code registry, and the adjudication
+    outcomes (clear / consider / acknowledge / needs review) are screening RESULTS carried in case
+    data, not error codes — they are documented in the service lifecycle reference and modelled in
+    data-model/karmacheck-data-model.yml.
