@@ -37,34 +37,128 @@ tags:
 - MCP Server
 - agent-native
 apis:
-- aid: karmacheck:karmacheck-api
-  name: KarmaCheck API
-  description: 'REST API for ordering and tracking background checks, credential verifications and
-    occupational health screenings. 69 operations across 62 paths covering authentication, cases,
-    candidate onboarding and disclosures, packages, services, secure documents, users and the
-    verification book. Authenticated with a JWT bearer token minted by POST /auth/api from an apiKey
-    and a clientAccessToken issued by KarmaCheck. Staging and production environments are separated
-    by host, and staging accepts predefined test SSNs that drive simulated clear / needs-review
-    results.'
+- aid: karmacheck:karmacheck-authentication-api
+  name: KarmaCheck Authentication API
+  description: The Authentication API from KarmaCheck — 1 operation(s) for authentication.
   humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
   baseURL: https://api.karmacheck.io
   tags:
   - Authentication
-  - Cases
-  - Candidate onboarding
-  - Secure documents
-  - Packages
-  - Services
-  - Users
-  - Companies
-  - Partner integrations
-  - Verification Book
-  - Webhook
   properties:
   - type: OpenAPI
-    url: openapi/karmacheck-api-openapi.yml
-  - type: Overlay
-    url: overlays/karmacheck-api-overlay.yaml
+    url: openapi/karmacheck-authentication-api-openapi.yml
+  - type: Documentation
+    url: https://developer.karmacheck.com/background-check-api/overview/introduction
+  - type: APIReference
+    url: https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client
+- aid: karmacheck:karmacheck-candidate-onboarding-api
+  name: KarmaCheck Candidate onboarding API
+  description: The Candidate onboarding API from KarmaCheck — 20 operation(s) for candidate onboarding.
+  humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
+  baseURL: https://api.karmacheck.io
+  tags:
+  - Candidate onboarding
+  properties:
+  - type: OpenAPI
+    url: openapi/karmacheck-candidate-onboarding-api-openapi.yml
+  - type: Documentation
+    url: https://developer.karmacheck.com/background-check-api/overview/introduction
+  - type: APIReference
+    url: https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client
+- aid: karmacheck:karmacheck-case-api
+  name: KarmaCheck Case API
+  description: The Case API from KarmaCheck — 2 operation(s) for case.
+  humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
+  baseURL: https://api.karmacheck.io
+  tags:
+  - Case
+  properties:
+  - type: OpenAPI
+    url: openapi/karmacheck-case-api-openapi.yml
+  - type: Documentation
+    url: https://developer.karmacheck.com/background-check-api/overview/introduction
+  - type: APIReference
+    url: https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client
+- aid: karmacheck:karmacheck-cases-api
+  name: KarmaCheck Cases API
+  description: The Cases API from KarmaCheck — 22 operation(s) for cases.
+  humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
+  baseURL: https://api.karmacheck.io
+  tags:
+  - Cases
+  properties:
+  - type: OpenAPI
+    url: openapi/karmacheck-cases-api-openapi.yml
+  - type: Documentation
+    url: https://developer.karmacheck.com/background-check-api/overview/introduction
+  - type: APIReference
+    url: https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client
+- aid: karmacheck:karmacheck-packages-api
+  name: KarmaCheck Packages API
+  description: The Packages API from KarmaCheck — 4 operation(s) for packages.
+  humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
+  baseURL: https://api.karmacheck.io
+  tags:
+  - Packages
+  properties:
+  - type: OpenAPI
+    url: openapi/karmacheck-packages-api-openapi.yml
+  - type: Documentation
+    url: https://developer.karmacheck.com/background-check-api/overview/introduction
+  - type: APIReference
+    url: https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client
+- aid: karmacheck:karmacheck-secure-documents-api
+  name: KarmaCheck Secure documents API
+  description: The Secure documents API from KarmaCheck — 6 operation(s) for secure documents.
+  humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
+  baseURL: https://api.karmacheck.io
+  tags:
+  - Secure documents
+  properties:
+  - type: OpenAPI
+    url: openapi/karmacheck-secure-documents-api-openapi.yml
+  - type: Documentation
+    url: https://developer.karmacheck.com/background-check-api/overview/introduction
+  - type: APIReference
+    url: https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client
+- aid: karmacheck:karmacheck-services-api
+  name: KarmaCheck Services API
+  description: The Services API from KarmaCheck — 5 operation(s) for services.
+  humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
+  baseURL: https://api.karmacheck.io
+  tags:
+  - Services
+  properties:
+  - type: OpenAPI
+    url: openapi/karmacheck-services-api-openapi.yml
+  - type: Documentation
+    url: https://developer.karmacheck.com/background-check-api/overview/introduction
+  - type: APIReference
+    url: https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client
+- aid: karmacheck:karmacheck-users-api
+  name: KarmaCheck Users API
+  description: The Users API from KarmaCheck — 1 operation(s) for users.
+  humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
+  baseURL: https://api.karmacheck.io
+  tags:
+  - Users
+  properties:
+  - type: OpenAPI
+    url: openapi/karmacheck-users-api-openapi.yml
+  - type: Documentation
+    url: https://developer.karmacheck.com/background-check-api/overview/introduction
+  - type: APIReference
+    url: https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client
+- aid: karmacheck:karmacheck-verification-book-api
+  name: KarmaCheck Verification Book API
+  description: The Verification Book API from KarmaCheck — 1 operation(s) for verification book.
+  humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
+  baseURL: https://api.karmacheck.io
+  tags:
+  - Verification Book
+  properties:
+  - type: OpenAPI
+    url: openapi/karmacheck-verification-book-api-openapi.yml
   - type: Documentation
     url: https://developer.karmacheck.com/background-check-api/overview/introduction
   - type: APIReference
@@ -75,6 +169,8 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Overlay
+  url: overlays/karmacheck-api-overlay.yaml
 - type: Website
   url: https://www.karmacheck.com/
 - type: DeveloperPortal
