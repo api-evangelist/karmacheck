@@ -1,0 +1,37 @@
+slug: karmacheck
+provider: KarmaCheck
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Healthcare Providers
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 2
+edges:
+- tag: Candidate onboarding
+  spec_file: karmacheck-candidate-onboarding-api-openapi.yml
+  capability_id: BC-300.10
+  capability_id_l1: BC-300
+  capability_name: Talent Acquisition Management
+  confidence: 0.85
+  evidence: '"Acknowledge FCRA", "Acknowledge E-Signature", schemas TestimonyEmploymentCreate, TestimonyEducation,
+    LegalAcknowledgmentDisclosures'
+  reason: Operations collect candidate consent/disclosure acknowledgements (FCRA, international, Canada)
+    and candidate-supplied employment, education, licence and address testimony for a background screening
+    — pre-hire screening and onboarding within Talent Acquisition Management.
+- tag: Cases
+  spec_file: karmacheck-cases-api-openapi.yml
+  capability_id: BC-300.10
+  capability_id_l1: BC-300
+  capability_name: Talent Acquisition Management
+  confidence: 0.85
+  evidence: '"Create case", "Get candidate info for case", "Download pre-adverse action document", schemas
+    DetailsCountyCriminal, ConfigValuesEducationVerification'
+  reason: Operations create and manage background-check cases on job candidates, including criminal, education-verification
+    and drug-screen services plus pre-adverse action documents — pre-employment screening, a Talent Acquisition
+    activity.

@@ -181,6 +181,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/karmacheck-capability-edges.yml
+  name: KarmaCheck Business Capability Map
 - type: Overlay
   url: overlays/karmacheck-api-overlay.yaml
 - type: Website
