@@ -13,25 +13,25 @@ capability_model:
   notice: NOTICE
 edge_count: 2
 edges:
-- tag: Candidate onboarding
-  spec_file: karmacheck-candidate-onboarding-api-openapi.yml
-  capability_id: BC-300.10
-  capability_id_l1: BC-300
-  capability_name: Talent Acquisition Management
-  confidence: 0.85
-  evidence: '"Acknowledge FCRA", "Acknowledge E-Signature", schemas TestimonyEmploymentCreate, TestimonyEducation,
-    LegalAcknowledgmentDisclosures'
-  reason: Operations collect candidate consent/disclosure acknowledgements (FCRA, international, Canada)
-    and candidate-supplied employment, education, licence and address testimony for a background screening
-    — pre-hire screening and onboarding within Talent Acquisition Management.
 - tag: Cases
   spec_file: karmacheck-cases-api-openapi.yml
   capability_id: BC-300.10
   capability_id_l1: BC-300
   capability_name: Talent Acquisition Management
-  confidence: 0.85
-  evidence: '"Create case", "Get candidate info for case", "Download pre-adverse action document", schemas
-    DetailsCountyCriminal, ConfigValuesEducationVerification'
-  reason: Operations create and manage background-check cases on job candidates, including criminal, education-verification
-    and drug-screen services plus pre-adverse action documents — pre-employment screening, a Talent Acquisition
-    activity.
+  confidence: 0.75
+  evidence: POST /case/create  Create case ... GET /case/id/{caseId}/preadverse/{type}/pdf/download  Download
+    pre-adverse action document ... GET /candidate/info/case/id/{caseId}  Get candidate info for case
+  reason: Ordering, processing and adverse-action handling of candidate background checks — the screening
+    step of the recruiting/hiring process, i.e. talent acquisition support.
+- tag: Candidate onboarding
+  spec_file: karmacheck-candidate-onboarding-api-openapi.yml
+  capability_id: BC-300.10
+  capability_id_l1: BC-300
+  capability_name: Talent Acquisition Management
+  confidence: 0.72
+  evidence: 'Acknowledge FCRA ... Acknowledge E-Signature ... schemas: TestimonyEmploymentCreate, TestimonyEducation,
+    TestimonyParentalConsent'
+  reason: 'Candidate-facing consent, FCRA disclosure and employment/education history capture within a
+    pre-employment background screening flow — part of the sourcing/hiring/onboarding step of talent acquisition.
+    Some ambiguity: it could be argued as compliance disclosure handling, but the operations sit in a
+    hiring-screening lifecycle.'
