@@ -12,6 +12,18 @@ description: 'KarmaCheck Inc. is a San Francisco based, API-first background che
   KarmaCheck also operates a remote MCP server so agents can order and track screenings from natural
   language, and integrates with Bullhorn, Workday and symplr CTM. The company holds a SOC 2 Type 2
   report and operates as an FCRA consumer reporting agency.'
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://cdn.prod.website-files.com/673634b37e2e1340c1ee5f3d/6736aa68f0e954a84817b9c0_Favicon-Icon.png
 url: https://raw.githubusercontent.com/api-evangelist/karmacheck/refs/heads/main/apis.yml
 x-type: company
