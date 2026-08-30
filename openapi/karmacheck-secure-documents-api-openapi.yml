@@ -1,0 +1,669 @@
+openapi: 3.2.0
+info:
+  title: KarmaCheck Secure documents API
+  description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
+
+
+    - [API basics](docs/overview/apis/api-overview.md)
+
+    - [Authentication](docs/overview/apis/authentication.md)
+
+    - [Environments](docs/overview/apis/environments.md)
+
+    - [Status codes and errors](docs/overview/apis/errors.md)'
+  version: '1.0'
+  contact:
+    name: KarmaCheck
+    email: customersuccess@karmacheck.com
+servers:
+- description: Stage
+  url: https://api-stage.karmacheck.io
+- description: Prod
+  url: https://api.karmacheck.io
+security:
+- JWT: []
+tags:
+- name: Secure documents
+paths:
+  /document/secure/create:
+    parameters: []
+    post:
+      tags:
+      - Secure documents
+      summary: Create secure document records
+      description: 'Creates secure document records in the KarmaCheck system and associates uploaded documents with an existing case.
+
+
+        This is step 3 of 3 when adding documents to KarmaCheck. At this stage, you should have successfully uploaded your documents via the URLs obtained from the [Generate secure document upload URLs](paths/~1document~1secure~1upload/post) API call. The uploaded documents are unavailable for use in KarmaCheck until they are associated with a case in this third step.
+
+
+        Document associations are identified by sending access grants. If your token does not have access to associate a document with a specific entity, a 403 Forbidden response will be returned.
+
+
+        In addition to associating a document with an existing case, you can call this API to create candidate disclosure and authorization document records before a case is created. When [creating a case](paths/~1case~1create/post), you can send the newly created document IDs to associate these documents with the case and the candidate. Note that this association is allowed only when the document type is a candidate disclosure or authorization.'
+      operationId: post-document-secure-create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentCreateRecords'
+              x-examples:
+                Example 1:
+                  list:
+                  - originalFileName: example_document.jpg
+                    documentTypeId: candidate-disclosures-and-authorizations
+                    fileKey: 1daa3c43-ea4e-4d66-9330-0cbd197feee6
+                  accessGrants:
+                    caseId: 22e88848-17d1-4946-bbac-18d44f381ca7
+            examples:
+              Candidate disclosure document:
+                value:
+                  list:
+                  - originalFileName: example_document.jpg
+                    documentTypeId: candidate-disclosures-and-authorizations
+                    fileKey: 1daa3c43-ea4e-4d66-9330-0cbd197feee6
+                  accessGrants:
+                    caseId: 22e88848-17d1-4946-bbac-18d44f381ca7
+        description: ''
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentRecords'
+                x-examples:
+                  Example 1:
+                    list:
+                    - secureDocumentId: 7225e58b-55a3-49ad-af82-2b3ab9595741
+              examples:
+                Example 1:
+                  value:
+                    list:
+                    - secureDocumentId: f6723gd8-ee70-4db3-b238-6bb27abf66c0
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '413':
+          description: Request Entity Too Large
+        '500':
+          description: Internal Server Error
+  /document/secure/upload:
+    post:
+      tags:
+      - Secure documents
+      summary: Generate secure document upload URLs
+      description: 'Generates short-lived URLs that can be used to upload one or more secure documents to the KarmaCheck system. This API call is step 1 of 3 when adding a document to the system and linking it to a case.
+
+
+        The returned URLs expire after 1 hour. If an attempt to use an expired URL occurs, the server responds with a 403 HTTP status code.'
+      operationId: post-document-secure-upload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentFiles'
+            examples:
+              Example 1:
+                value:
+                  files:
+                  - documentTypeId: candidate-disclosures-and-authorizations
+                    mimeType: application/pdf
+        description: ''
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - list
+                properties:
+                  list:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - url
+                      - fileKey
+                      properties:
+                        url:
+                          type: string
+                          format: uri
+                          description: The URL to upload the document to. This expires after 1 hour.
+                        fileKey:
+                          type: string
+                          description: The identifier used to reference the file in KarmaCheck's storage system. This must be included in the [Create secure document records](karma-api-openapi.yaml/paths/~1document~1secure~1create/post) call.
+              examples:
+                Example 1:
+                  value:
+                    list:
+                    - url: https://s3.amazonaws.com/dev.private.storage-bin.karmacheck.io/b92fef93-437f-4a05-adb7-182357b8a1f0?AWSAccessKeyId=REDACTED_AWS_ACCESS_KEY_ID&Content-Type=image%2Fjpeg&Expires=1710031824&Signature=x0e6I7GZFOJLUe%2FTkRmDjoNmNvc%3D&X-Amzn-Trace-Id=Root%3D1-65ecf5c0-4c1e58d24ba6707d02d69e20%3BParent%3D3898fdce19660298%3BSampled%3D0%3BLineage%3De3b20767%3A0&x-amz-security-token=FwoGZXIvYXdzEBEaDLO5SgCTmUgIMZ7bNyK5AUBiY%2B5i0%2B8%2Fcg8Y0XFmpfLWBqhmstkdrK3uF79EMlgDjWpX%2FqgRisuvbPzFFOZ9K1dgSorlUAPgTYIXKGdadO3ZsdsVTaL4kAZDX5qQNa%2FnP%2BFB9SVgqa6F4%2FIaBzA1aDiqs7w%2Ft7tGounuPV42O86V6ig3cuBHcx9%2BUOcd9mbJ2GGytKjDrZ7PBfIJimKy0tMFaFaTSCVIPcMVyqUe1%2BGFTHtc8686WQFpIW34Ff06SzPZmfQTVRcFKKXrs68GMi2QMcUwY0v194kGFN3WaGw1sqIqab3xJLwKXQGR4GbQUwiQHMK6Ws7cg4Hesx4%3D
+                      fileKey: b92fef93-437f-4a05-adb7-182357b8a1f0
+        '400':
+          description: 'Bad Request
+
+
+            - An invalid or unsupported document type was provided.
+
+            - An invalid or unsupported MIME type was provided.'
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+  /document/secure/id/{secureDocumentId}/download/url:
+    parameters:
+    - schema:
+        type: string
+      name: secureDocumentId
+      in: path
+      required: true
+      description: The ID of the document to download.
+    get:
+      tags:
+      - Secure documents
+      summary: Get secure document download URL
+      description: Gets a URL from KarmaCheck, which can then be used to download a secure document. The URL will be valid for only 60 minutes, but once the download begins, the download can take as long as needed. The URL can also be reused as many times as needed during the 60-minute validity period.
+      operationId: get-document-secure-id-secureDocumentId-download-url
+      responses:
+        '200':
+          description: OK
+          content:
+            text/html:
+              schema:
+                type: string
+              examples:
+                Example 1:
+                  value: https://s3.amazonaws.com/stage.private.storage-bin.karmacheck.io/escreen-gkfQxkAStpb7VxOw9gsT-doc-ohs-occupational-health.pdf?AWSAccessKeyId=REDACTED_AWS_ACCESS_KEY_ID&Expires=1698176316&Signature=JEiJoN04lEsSTk212%2BQeXN7On%2B8%3D&X-Amzn-Trace-Id=Root%3D1-65380f2c-2e8f8372612dc45d463cf244%3BParent%3D51f9b6490fd41e98%3BSampled%3D0%3BLineage%3De3b20767%3A0&x-amz-security-token=FwoGZXIvYXdzEDQaDIDz3VR%2FxjmXT%2Fw2PSK7Acn2jWag5OEjzrRGT37r%2FZWKUfgFrYIceTA401Psv1sTisbuYMbSkdpQWEhM2%2B65%2BZMvO3tuZN9waO7XfCsXK5LpyV79VJobVTs89tjEasjV6WZdiI%2FoHf0qs%2BKPbZeBtvUlvI6xGOrj6KOFKxxF%2BZyxHb8FxUS6CnRf50oiCmyrR4rOMKqFFzUdfC3yS5eVIp2T6sAEl1FZcfsOUKG4eRZ%2BAvSG0It3xXo89ChDIXvXY4AE5ETiBX3yucMorJ7gqQYyLeH7XjvfVyel85XfJsdOrBsimh3CwpZ4ARtPih7y%2F71XLerGQpOhCZhyf1g5Pg%3D%3D
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /document/secure/list/case/id/{caseId}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+    get:
+      tags:
+      - Secure documents
+      summary: Get secure document list
+      description: Returns a list of the secure documents associated with a case.
+      operationId: get-document-secure-list-case-id-caseId
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentList'
+              examples:
+                Example 1:
+                  value:
+                  - id: 9038ed0b-e4ec-48d2-8b02-6b83cfc91c71
+                    documentTypeId: ohs-participant-passport
+                    title: null
+                    description: null
+                    fileName: escreen-8W53CrkbECCh5rGvOUN7-doc-ohs-participant-passport.pdf
+                    fileKey: escreen-8W53CrkbECCh5rGvOUN7-doc-ohs-participant-passport.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: ce1a7040-ed8a-4757-8cab-b8dba2c8c618
+                    documentTypeId: ohs-occupational-health
+                    title: null
+                    description: null
+                    fileName: escreen-Zpqpiv2WuZ8rfZHSyvAx-doc-ohs-occupational-health.pdf
+                    fileKey: escreen-Zpqpiv2WuZ8rfZHSyvAx-doc-ohs-occupational-health.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: 0d19059e-af73-499d-9c33-9373b3375bce
+                    documentTypeId: ohs-occupational-health
+                    title: null
+                    description: null
+                    fileName: escreen-8W53CrkbECCh5rGvOUN7-doc-ohs-occupational-health.pdf
+                    fileKey: escreen-8W53CrkbECCh5rGvOUN7-doc-ohs-occupational-health.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: aa211c20-c189-464e-9158-2cffa45ccffb
+                    documentTypeId: ohs-participant-passport
+                    title: null
+                    description: null
+                    fileName: escreen-Zpqpiv2WuZ8rfZHSyvAx-doc-ohs-participant-passport.pdf
+                    fileKey: escreen-Zpqpiv2WuZ8rfZHSyvAx-doc-ohs-participant-passport.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: cb00f796-a5eb-4359-904c-c6398bbadfa8
+                    documentTypeId: ohs-result-certificate
+                    title: null
+                    description: null
+                    fileName: escreen-8W53CrkbECCh5rGvOUN7-doc-ohs-result-certificate.pdf
+                    fileKey: escreen-8W53CrkbECCh5rGvOUN7-doc-ohs-result-certificate.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: a6615dbd-f144-49a8-b240-454f27744002
+                    documentTypeId: ohs-occupational-health
+                    title: null
+                    description: null
+                    fileName: escreen-61DuAAjaoT1fhSZczTGC-doc-ohs-occupational-health.pdf
+                    fileKey: escreen-61DuAAjaoT1fhSZczTGC-doc-ohs-occupational-health.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: 2165c1db-354f-493b-9e0a-b4f815f3671a
+                    documentTypeId: ohs-result-certificate
+                    title: null
+                    description: null
+                    fileName: escreen-61DuAAjaoT1fhSZczTGC-doc-ohs-result-certificate.pdf
+                    fileKey: escreen-61DuAAjaoT1fhSZczTGC-doc-ohs-result-certificate.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: 0a869770-6a6b-4a83-b5b7-577d7809836f
+                    documentTypeId: ohs-participant-passport
+                    title: null
+                    description: null
+                    fileName: escreen-gkfQxkAStpb7VxOw9gsT-doc-ohs-participant-passport.pdf
+                    fileKey: escreen-gkfQxkAStpb7VxOw9gsT-doc-ohs-participant-passport.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: c0cf61e7-71ed-4985-9902-bb3742084074
+                    documentTypeId: ohs-result-certificate
+                    title: null
+                    description: null
+                    fileName: escreen-Zpqpiv2WuZ8rfZHSyvAx-doc-ohs-result-certificate.pdf
+                    fileKey: escreen-Zpqpiv2WuZ8rfZHSyvAx-doc-ohs-result-certificate.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: 4bd3ec33-6411-46e0-aba9-e1286f4b3d07
+                    documentTypeId: ohs-occupational-health
+                    title: null
+                    description: null
+                    fileName: escreen-gkfQxkAStpb7VxOw9gsT-doc-ohs-occupational-health.pdf
+                    fileKey: escreen-gkfQxkAStpb7VxOw9gsT-doc-ohs-occupational-health.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: b73f8dce-dd3f-4ec5-aed0-f3dbd429161e
+                    documentTypeId: ohs-result-certificate
+                    title: null
+                    description: null
+                    fileName: escreen-gkfQxkAStpb7VxOw9gsT-doc-ohs-result-certificate.pdf
+                    fileKey: escreen-gkfQxkAStpb7VxOw9gsT-doc-ohs-result-certificate.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+                  - id: 5eea79cc-08b4-45f0-8337-f9f25da019d7
+                    documentTypeId: ohs-participant-passport
+                    title: null
+                    description: null
+                    fileName: escreen-61DuAAjaoT1fhSZczTGC-doc-ohs-participant-passport.pdf
+                    fileKey: escreen-61DuAAjaoT1fhSZczTGC-doc-ohs-participant-passport.pdf
+                    fileFormat: pdf
+                    crUserId: d7b55ff8-704c-4d8d-854e-d3c11ce0b420
+                    displayReport: 0
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+  /document/secure/mimetypes:
+    get:
+      tags:
+      - Secure documents
+      summary: Get secure document MIME types
+      description: Gets acceptable MIME types for secure documents.
+      operationId: get-document-secure-mimetypes
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - list
+                properties:
+                  list:
+                    type: array
+                    description: A list of MIME types that can be uploaded to KarmaCheck as secure documents.
+                    items:
+                      type: string
+              examples:
+                Example 1:
+                  value:
+                    list:
+                    - application/epub+zip
+                    - application/msword
+                    - application/pdf
+                    - application/rtf
+                    - application/vnd.apple.keynote
+                    - application/vnd.apple.numbers
+                    - application/vnd.apple.pages
+                    - application/vnd.lotus-wordpro
+                    - application/vnd.ms-excel
+                    - application/vnd.ms-excel.addin.macroenabled.12
+                    - application/vnd.ms-excel.sheet.binary.macroenabled.12
+                    - application/vnd.ms-excel.sheet.macroenabled.12
+                    - application/vnd.ms-excel.template.macroenabled.12
+                    - application/vnd.ms-powerpoint
+                    - application/vnd.ms-powerpoint.addin.macroenabled.12
+                    - application/vnd.ms-powerpoint.presentation.macroenabled.12
+                    - application/vnd.ms-powerpoint.slideshow.macroenabled.12
+                    - application/vnd.ms-powerpoint.template.macroenabled.12
+                    - application/vnd.ms-word.document.macroenabled.12
+                    - application/vnd.ms-word.template.macroenabled.12
+                    - application/vnd.oasis.opendocument.presentation
+                    - application/vnd.oasis.opendocument.spreadsheet
+                    - application/vnd.oasis.opendocument.text
+                    - application/vnd.openofficeorg.extension
+                    - application/vnd.openxmlformats-officedocument.presentationml.presentation
+                    - application/vnd.openxmlformats-officedocument.presentationml.slideshow
+                    - application/vnd.openxmlformats-officedocument.presentationml.template
+                    - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+                    - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+                    - application/vnd.openxmlformats-officedocument.wordprocessingml.template
+                    - application/vnd.pagemaker
+                    - application/vnd.quark.quarkxpress
+                    - application/vnd.rn-realmedia
+                    - application/vnd.visio
+                    - application/vnd.wordperfect
+                    - application/x-7z-compressed
+                    - application/x-mswrite
+                    - application/x-rar-compressed
+                    - application/xhtml+xml
+                    - application/zip
+                    - image/avif
+                    - image/bmp
+                    - image/cgm
+                    - image/g3fax
+                    - image/gif
+                    - image/heic
+                    - image/heif
+                    - image/hej2k
+                    - image/ief
+                    - image/jp2
+                    - image/jpeg
+                    - image/jpeg2000
+                    - image/jpm
+                    - image/jpx
+                    - image/ktx
+                    - image/ktx2
+                    - image/pjpeg
+                    - image/png
+                    - image/svg+xml
+                    - image/tiff
+                    - image/vnd.adobe.photoshop
+                    - image/vnd.djvu
+                    - image/vnd.dwg
+                    - image/vnd.dxf
+                    - image/vnd.microsoft.icon
+                    - image/vnd.wap.wbmp
+                    - image/vnd.xiff
+                    - image/webp
+                    - image/x-cmu-raster
+                    - image/x-cmx
+                    - image/x-icon
+                    - image/x-portable-anymap
+                    - image/x-portable-bitmap
+                    - image/x-portable-graymap
+                    - image/x-portable-pixmap
+                    - image/x-rgb
+                    - image/x-tga
+                    - image/x-xbitmap
+                    - image/x-xpixmap
+                    - image/x-xwindowdump
+                    - image/xbm
+                    - text/csv
+                    - text/html
+                    - text/plain
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+  /document/secure/type/list:
+    get:
+      tags:
+      - Secure documents
+      summary: Get secure document type list
+      description: Returns a list of objects representing all secure document types in KarmaCheck. Among other uses, it enables population of the supported document types in a list that users can select from and associate with the document that they are uploading.
+      operationId: get-document-secure-type-list
+      parameters: []
+      responses:
+        '200':
+          description: Secure document types are listed in alphanumeric order by ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentType'
+                x-examples:
+                  Example 1:
+                  - id: 06813017-94ef-4250-9083-375935ce9dc8
+                    secureDocumentType: tin-check-result
+                    displayName: TIN Check Results
+                    displayInDashboard: 0
+              examples:
+                Example 1:
+                  value:
+                  - id: 06813017-94ef-4250-9083-375935ce9dc8
+                    secureDocumentType: tin-check-result
+                    displayName: TIN Check Results
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+components:
+  schemas:
+    DocumentType:
+      title: DocumentType
+      type: array
+      items:
+        type: object
+        required:
+        - id
+        - secureDocumentType
+        - displayName
+        properties:
+          id:
+            $ref: '#/components/schemas/DocumentTypeID'
+            description: The unique identifier for the secure document type. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
+          secureDocumentType:
+            type: string
+            enum:
+            - tin-check-result
+            - oig-verification-proof
+            - provider-html-report
+            - identification
+            - candidate-disclosures-and-authorizations
+            - cbsv-authorization
+            - international-report
+            - education-document
+            - employment-document
+            - ohs-breath-alcohol
+            - ohs-chain-of-custody
+            - ohs-occupational-health
+            - ohs-participant-passport
+            - ohs-result-certificate
+            - search-result
+            description: The name of the secure document type.
+          displayName:
+            type: string
+            description: The name of the secure document type that's displayed to dashboard users.
+    DocumentCreateRecords:
+      title: DocumentCreateRecords
+      type: object
+      required:
+      - list
+      properties:
+        list:
+          type: array
+          items:
+            type: object
+            required:
+            - originalFileName
+            - documentTypeId
+            - fileKey
+            properties:
+              originalFileName:
+                type: string
+                description: The file name for the document that was uploaded.
+              documentTypeId:
+                type: string
+                description: 'The type of document to store.
+
+
+                  Allowed value: `candidate-disclosures-and-authorizations`'
+              fileKey:
+                type: string
+                description: The value from the [Generate secure document upload URLs](karma-api-openapi.yaml/paths/~1document~1secure~1upload/post) response.
+              title:
+                type: string
+                description: A title for the document.
+              description:
+                type: string
+                description: A description of the document.
+              fileFormat:
+                description: The file format (e.g. pdf, jpeg, png)
+                type: string
+                enum:
+                - pdf
+                - jpg
+                - jpeg
+                - png
+        accessGrants:
+          type: object
+          required:
+          - caseId
+          properties:
+            caseId:
+              type: string
+              description: The ID of the case to associate with the document.
+    DocumentTypeID:
+      title: DocumentTypeID
+      type: string
+      enum:
+      - 06813017-94ef-4250-9083-375935ce9dc8
+      - 4ad585b6-b087-11ec-9bf1-df77b62cb712
+      - 7d25e1de-0b46-4a6c-bd06-d0b55526af08
+      - 857d42f3-73b6-4588-8855-0ab49e376a84
+      - candidate-disclosures-and-authorizations
+      - cbsv-authorization
+      - da070d09-b52f-4423-9c94-eff458ea3aa0
+      - education-document
+      - employment-document
+      - ohs-breath-alcohol
+      - ohs-chain-of-custody
+      - ohs-occupational-health
+      - ohs-participant-passport
+      - ohs-result-certificate
+      - search-result
+      description: The ID of the document type that the secure document is categorized under. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
+    DocumentRecords:
+      title: DocumentRecords
+      type: object
+      required:
+      - list
+      properties:
+        list:
+          type: array
+          items:
+            type: object
+            required:
+            - secureDocumentId
+            properties:
+              secureDocumentId:
+                type: string
+                description: The unique identifier for the secure document.
+    DocumentFiles:
+      title: DocumentFiles
+      type: object
+      required:
+      - files
+      properties:
+        files:
+          type: array
+          description: An array that enables the generation of upload URLs for multiple files at once. Note that the order matters. Make sure to upload the first file to the first URL, and so on.
+          items:
+            type: object
+            required:
+            - documentTypeId
+            - mimeType
+            properties:
+              documentTypeId:
+                type: string
+                description: 'The ID for the type of document to be uploaded.
+
+
+                  Allowed value: `candidate-disclosures-and-authorizations`'
+              mimeType:
+                type: string
+                description: The MIME type of the file to be uploaded. See [Get secure document MIME types](karma-api-openapi.yaml/paths/~1document~1secure~1mimetypes/get) for details.
+    DocumentList:
+      title: DocumentList
+      type: array
+      items:
+        type: object
+        required:
+        - id
+        - documentTypeId
+        - title
+        - description
+        - fileName
+        - fileKey
+        - fileFormat
+        - crUserId
+        - displayReport
+        properties:
+          id:
+            type: string
+            description: The ID of a secure document.
+          documentTypeId:
+            $ref: '#/components/schemas/DocumentTypeID'
+          title:
+            type:
+            - string
+            - 'null'
+          description:
+            type:
+            - string
+            - 'null'
+          fileName:
+            type: string
+          fileKey:
+            type: string
+            description: The reference ID of the file in KarmaCheck's storage system.
+          fileFormat:
+            type: string
+          crUserId:
+            type: string
+            description: The ID of the user that created a record of the secure document.
+          displayReport:
+            type: integer
+            description: 'A boolean integer: 1 (true) if the document is included in the report for the case; 0 (false) otherwise.'
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+x-apievangelist-provenance:
+  assembled: '2026-08-23'
+  method: searched
+  note: Reassembled verbatim from the 69 per-operation OpenAPI 3.1.0 YAML documents KarmaCheck publishes inside the markdown twins of its public API reference (https://developer.karmacheck.com/api-reference/<op>.md). Each page embeds a complete, single-operation slice of KarmaCheck's own openapi.json; the 69 slices merged with ZERO conflicting definitions. No content was authored, inferred, or padded by API Evangelist. KarmaCheck's consolidated export at https://developer.karmacheck.com/background-check-api/api-reference/openapi.json is login-gated (HTTP 302 to /login), so this reassembly is the only machine-readable form of the contract reachable without credentials.
+  source_index: https://developer.karmacheck.com/sitemap.xml
+  slices_merged: 69
+  conflicts: 0

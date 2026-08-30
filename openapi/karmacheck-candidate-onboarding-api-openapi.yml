@@ -1,0 +1,2459 @@
+openapi: 3.2.0
+info:
+  title: KarmaCheck Candidate onboarding API
+  description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
+
+
+    - [API basics](docs/overview/apis/api-overview.md)
+
+    - [Authentication](docs/overview/apis/authentication.md)
+
+    - [Environments](docs/overview/apis/environments.md)
+
+    - [Status codes and errors](docs/overview/apis/errors.md)'
+  version: '1.0'
+  contact:
+    name: KarmaCheck
+    email: customersuccess@karmacheck.com
+servers:
+- description: Stage
+  url: https://api-stage.karmacheck.io
+- description: Prod
+  url: https://api.karmacheck.io
+security:
+- JWT: []
+tags:
+- name: Candidate onboarding
+paths:
+  /case/id/{caseId}/canadadisclosure/{language}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The ID of a case.
+    - $ref: '#/components/parameters/language'
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Acknowledge Canada Disclosure
+      description: Submits acknowledgement of a Canada Disclosure document for tracking and auditing purposes. This action creates a case data record with the provided information. The system records the acknowledgment and generates a downloadable PDF file of the acknowledged disclosure.
+      operationId: post-case-id-caseId-canadadisclosure-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegalAcknowledgmentDisclosure'
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case doesn't have the specified disclosure service, or the candidate already acknowledged it.
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get Canada Disclosure
+      description: Retrieves a Canada Disclosure document to present to the candidate so that the candidate can acknowledge and continue the onboarding process. If the candidate has already acknowledged the disclosure, the response will indicate this and provide a valid `caseDataId` so that the details of the previous acknowledgement can be retrieved. This can also be used to determine whether the candidate can skip this specific disclosure step if they leave and then continue their onboarding later or on another device, for example.
+      operationId: get-case-id-caseId-canadadisclosure-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - alreadyAck
+                - title
+                - body
+                - authorizationStatement
+                - authorizationObject
+                properties:
+                  alreadyAck:
+                    type: boolean
+                    description: True if the candidate already acknowledged the disclosure; false otherwise.
+                  title:
+                    type: string
+                    description: Escaped HTML.
+                  header:
+                    type: string
+                    description: Escaped HTML.
+                  body:
+                    type: string
+                    description: Escaped HTML.
+                  authorizationStatement:
+                    type: string
+                    description: Escaped HTML.
+                  authorizationObject:
+                    type: object
+                    required:
+                    - sections
+                    properties:
+                      header:
+                        type: string
+                      selectionType:
+                        type: string
+                        enum:
+                        - single
+                        - multi
+                      sections:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - selectionValue
+                          properties:
+                            title:
+                              type: string
+                            selectionValue:
+                              type: string
+                              description: The postback value when calling the corresponding acknowledge endpoint.
+                              example: signature
+                            body:
+                              type: string
+                  caseDataId:
+                    type: string
+                    description: Returned only if `alreadyAck` is true.
+                    format: uuid
+                  signature:
+                    type: string
+                    description: Returned only if `alreadyAck` is true. For candidates who onboarded using KarmaCheck's onboarding experience, this is the value that the candidate entered into the signature input field on the legal step, which might not be exactly the same as the name that the case was ordered under.
+              examples:
+                Example 1:
+                  value:
+                    alreadyAck: false
+                    title: <div>Canada Disclosure Acknowledgment and Authorization for Background Check</div>
+                    header: <div>Disclosure regarding background investigation and investigative consumer reports, a summary of your rights under the Fair Credit Reporting Act</div>
+                    body: <div><p><span>I acknowledge receipt of the separate documents entitled DISCLOSURE REGARDING BACKGROUND INVESTIGATION, A SUMMARY OF YOUR RIGHTS UNDER THE FAIR CREDIT REPORTING ACT and the DISCLOSURE FOR INVESTIGATIVE CONSUMER REPORT and certify that I have read and understand those documents. </span></p><p><span>In connection with your employment application with Example Company (the “Company”), this notice is intended to inform you that a consumer report(s) (also known as “a background check”) may be obtained on you from a consumer reporting agency for employment purposes. The reports may contain information about you relating to your criminal information or history, driving and/or motor vehicle records, education and/or employment history, social media, or other background checks, inclusive of but not necessarily limited to records and information from </span><span>any law enforcement agency, administrator, state or federal agency, institution, school or university (public or private), information service bureau, employer, or insurance company</span><span>. </span><span>I agree that a facsimile (&quot;fax&quot;), electronic or photographic copy of this Authorization shall be as valid as the original.</span></p><p><span>The report(s) is being prepared by our background screening vendor, KarmaCheck, Inc. and its associated partners or vendors.</span></p><p><span>The scope of this notice and below authorization is not limited to the present and, if you are hired, will continue throughout the course of your employment and allow the Company to conduct future screenings for retention, promotion or reassignment, as permitted by law and unless revoked by you in writing.</span></p></div>
+                    authorizationStatement: '<div><p><b><u><span>AUTHORIZATION</span></u></b></p><p>By signing below, you authorize the obtaining of a consumer report by the Company at any time after receipt of this authorization and throughout the course of your employment, as described above.</p><form><p><input type=''checkbox'' readonly='''' ##SEND_REPORT## style=''-fs-checkbox-style: check;'' /><label>Check the box if you would like to receive a copyÏ of the investigative consumer report, free of charge, if one is obtained by the Company.</label></p><p>Signature</p><p><input type=''text'' readonly='''' value=''''/></p></form></div>'
+                    authorizationObject:
+                      sections:
+                      - title: AUTHORIZATION
+                        selectionValue: signature
+                        body: By signing below, you authorize the obtaining of a consumer report by the Company at any time after receipt of this authorization and throughout the course of your employment, as described above.
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case does not have the specified disclosure as a requirement.
+        '500':
+          description: Internal Server Error
+  /case/id/{caseId}/customdisclosure/{language}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The ID of a case.
+    - $ref: '#/components/parameters/language'
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Acknowledge Custom Disclosure
+      description: Submits acknowledgement of a Custom Disclosure document for tracking and auditing purposes. This action creates a case data record with the provided information. The system records the acknowledgment and generates a downloadable PDF file of the acknowledged disclosure.
+      operationId: post-case-id-caseId-customdisclosure-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegalAcknowledgmentDisclosure'
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case doesn't have the specified disclosure service, or the candidate already acknowledged it.
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get Custom Disclosure
+      description: Retrieves a Custom Disclosure document to present to the candidate so that the candidate can acknowledge and continue the onboarding process. If the candidate has already acknowledged the disclosure, the response will indicate this and provide a valid `caseDataId` so that the details of the previous acknowledgement can be retrieved. This can also be used to determine whether the candidate can skip this specific disclosure step if they leave and then continue their onboarding later or on another device, for example.
+      operationId: get-case-id-caseId-customdisclosure-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - alreadyAck
+                - title
+                - body
+                - authorizationStatement
+                - authorizationObject
+                properties:
+                  alreadyAck:
+                    type: boolean
+                    description: True if the candidate already acknowledged the disclosure; false otherwise.
+                  title:
+                    type: string
+                    description: Escaped HTML.
+                  header:
+                    type: string
+                    description: Escaped HTML.
+                  body:
+                    type: string
+                    description: Escaped HTML.
+                  authorizationStatement:
+                    type: string
+                    description: Escaped HTML.
+                  authorizationObject:
+                    type: object
+                    required:
+                    - sections
+                    properties:
+                      header:
+                        type: string
+                      selectionType:
+                        type: string
+                        enum:
+                        - single
+                        - multi
+                      sections:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - selectionValue
+                          properties:
+                            title:
+                              type: string
+                            selectionValue:
+                              type: string
+                              description: The postback value when calling the corresponding acknowledge endpoint.
+                              example: signature
+                            body:
+                              type: string
+                  caseDataId:
+                    type: string
+                    description: Returned only if `alreadyAck` is true.
+                    format: uuid
+                  signature:
+                    type: string
+                    description: Returned only if `alreadyAck` is true. For candidates who onboarded using KarmaCheck's onboarding experience, this is the value that the candidate entered into the signature input field on the legal step, which might not be exactly the same as the name that the case was ordered under.
+              examples:
+                Example 1:
+                  value:
+                    alreadyAck: false
+                    title: <div>Custom Disclosure Acknowledgment and Authorization for Background Check (custom)</div>
+                    header: <div>Disclosure regarding background investigation and investigative consumer reports, a summary of your rights under the Fair Credit Reporting Act</div>
+                    body: <div><p><span>custom disclosure - I acknowledge receipt of the separate documents entitled DISCLOSURE REGARDING BACKGROUND INVESTIGATION, A SUMMARY OF YOUR RIGHTS UNDER THE FAIR CREDIT REPORTING ACT and the DISCLOSURE FOR INVESTIGATIVE CONSUMER REPORT and certify that I have read and understand those documents. </span></p><p><span>In connection with your employment application with Example Company (the “Company”), this notice is intended to inform you that a consumer report(s) (also known as “a background check”) may be obtained on you from a consumer reporting agency for employment purposes. The reports may contain information about you relating to your criminal information or history, driving and/or motor vehicle records, education and/or employment history, social media, or other background checks, inclusive of but not necessarily limited to records and information from </span><span>any law enforcement agency, administrator, state or federal agency, institution, school or university (public or private), information service bureau, employer, or insurance company</span><span>. </span><span>I agree that a facsimile (&quot;fax&quot;), electronic or photographic copy of this Authorization shall be as valid as the original.</span></p><p><span>The report(s) is being prepared by our background screening vendor, KarmaCheck, Inc. and its associated partners or vendors.</span></p><p><span>The scope of this notice and below authorization is not limited to the present and, if you are hired, will continue throughout the course of your employment and allow the Company to conduct future screenings for retention, promotion or reassignment, as permitted by law and unless revoked by you in writing.</span></p></div>
+                    authorizationStatement: '<div><p><b><u><span>AUTHORIZATION</span></u></b></p><p>By signing below, you authorize the obtaining of a consumer report by the Company at any time after receipt of this authorization and throughout the course of your employment, as described above.</p><form><p><input type=''checkbox'' readonly='''' ##SEND_REPORT## style=''-fs-checkbox-style: check;'' /><label>Check the box if you would like to receive a copyÏ of the investigative consumer report, free of charge, if one is obtained by the Company.</label></p><p>Signature</p><p><input type=''text'' readonly='''' value=''''/></p></form></div>'
+                    authorizationObject:
+                      sections:
+                      - title: AUTHORIZATION
+                        selectionValue: signature
+                        body: By signing below, you authorize the obtaining of a consumer report by the Company at any time after receipt of this authorization and throughout the course of your employment, as described above.
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case does not have the specified disclosure as a requirement.
+        '500':
+          description: Internal Server Error
+  /case/id/{caseId}/esig/{language}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The ID of the case.
+    - $ref: '#/components/parameters/language'
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Acknowledge E-Signature
+      description: Submits acknowledgement of the e-Signature for tracking and auditing purposes. This action creates a case data record with the provided information. The system records the acknowledgment and generates a PDF file of the e-Signature document, which includes the candidate's acknowledgment and is available for download.
+      operationId: post-case-id-caseId-esig-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegalAcknowledgmentSignature'
+            examples:
+              Example 1:
+                value:
+                  signatureType: electronic
+                  signature: John Hancock
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case doesn't include the e-Signature service, or the candidate already acknowledged it.
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get E-Signature
+      description: 'Retrieves an e-Signature consent document and form that can be presented to and acknowledged by the candidate as part of the onboarding process. If the candidate has already acknowledged it, the response will indicate this as well as provide the `caseDataId` of the acknowledgement, which can be used to retrieve details. These can be used to determine whether the candidate can skip this step if they leave and then continue their onboarding later or on another device, for example.
+
+
+        The e-Signature document can be customized. If a customer-specific version doesn''t exist, a default one will be returned.'
+      operationId: get-case-id-caseId-esig-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - alreadyAck
+                - title
+                - body
+                - authorizationStatement
+                - authorizationObject
+                properties:
+                  alreadyAck:
+                    type: boolean
+                    description: True if the candidate already acknowledged the e-Signature document; false otherwise.
+                  title:
+                    type: string
+                    description: Escaped HTML.
+                  header:
+                    type: string
+                    description: Escaped HTML.
+                  body:
+                    type: string
+                    description: Escaped HTML.
+                  authorizationStatement:
+                    type: string
+                    description: Escaped HTML.
+                  authorizationObject:
+                    type: object
+                    required:
+                    - sections
+                    properties:
+                      header:
+                        type: string
+                      selectionType:
+                        enum:
+                        - single
+                        - multi
+                      sections:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - selectionValue
+                          properties:
+                            title:
+                              type: string
+                            selectionValue:
+                              type: string
+                              description: The value used when [acknowledging the e-Signature](karma-api-openapi.yaml/paths/~1case~1id~1{caseId}~1esig~1{language}/post).
+                              enum:
+                              - electronic
+                              - manual
+                            body:
+                              type: string
+                  caseDataId:
+                    type: string
+                    description: Returned only if `alreadyAck` is true.
+                    format: uuid
+                  signatureType:
+                    description: Returned only if `alreadyAck` is true.
+                    enum:
+                    - electronic
+                    - manual
+                  signature:
+                    type: string
+                    description: Returned only if `alreadyAck` is true. For candidates who onboarded using KarmaCheck's onboarding experience, this is the value that the candidate entered into the signature input field on the legal step, which might not be exactly the same as the name that the case was ordered under.
+              examples:
+                Example 1:
+                  value:
+                    alreadyAck: false
+                    title: <div>Electronic Signature Consent</div>
+                    body: <p>e-signature - As part of the selection process at KarmaCheck, the &quot;Company,&quot; you will need to consent to a background check electronically. By typing your name and clicking in the box below, you are consenting to receive any communications (legally required or otherwise) and all changes to such communications electronically. In order to use the website, you must provide at your own expense an Internet connected device that is compatible with the minimum requirements outlined below. You also confirm that your device will meet these specifications and requirements and will permit you to access and retain the communications electronically each time you access and use the website.</p><p><b>System Requirements to Access Information</b></p><p>To receive and view an electronic copy of the Communications you must have the following equipment and software:</p><ul><li>A personal computer or other device which is capable of accessing the Internet. Your access to this page verifies that your system/device meets these requirements.</li><li>A current version of Chrome, Firefox, or Safari, Internet web browser which supports security industry best practices for HTTPS encrypted communications, JavaScript, and cookies. Your access to this page verifies that your browser meets these requirements.</li></ul><p><b>System Requirements to Retain Information</b></p><p>To retain a copy, you must either have a printer connected to your personal computer or other device or, alternatively, the ability to save a copy through use of printing service or software such as Adobe Acrobat®. If you would like to proceed using paper forms, please choose option 2 below.</p><p><b>Withdrawal of Electronic Acceptance of Disclosures and Notices</b></p><p>You can also contact us to withdraw your consent to receive any future communications electronically, including if the system requirements described above change and you no longer possess the required system. If you withdraw your consent, we will terminate your use of the KarmaCheck, Inc. website and the services provided through the KarmaCheck, Inc. website.</p><p>To ensure that a signature is unique and to safeguard you against unauthorized use of your name, your IP address 130.176.213.149 has been recorded and will be stored along with your electronic signature. Please note that if you wish to submit your Disclosure and Authorization Forms electronically, KarmaCheck, Inc. requires that you include your social security number or user identification. All of your information will be encrypted and transmitted via our secure website.</p>
+                    authorizationStatement: '<form><h3>CHOOSE ONE OF THE FOLLOWING OPTIONS:</h3><h4><label for=''signatureTypeElectronic''>Option #1 - Electronic Signature</label></h4><input type=''radio''  id=''signatureTypeElectronic'' name=''signatureType'' value=''electronic''/><label for=''signatureTypeElectronic''>I, <input type=''text'' readonly='''' id=''electronicName'' name=''electronicName'' value=''''/><span>(type full name)</span>, consent to transacting electronically, including receiving legally required notices electronically. I understand that KarmaCheck, Inc. uses computer technology to ensure that my signed documents are not altered after submission. I agree to allow KarmaCheck, Inc. to validate my signed documents in this way.</label><h4><label for=''signatureTypeManual''>Option #2 - Manual Signature (will delay your start date)</label></h4><input type=''radio''  id=''signatureTypeManual'' name=''signatureType'' value=''manual''/><label for=''signatureTypeManual''>I, <input type=''text'' readonly='''' id=''manualName'' name=''manualName'' value=''''/><span>(type full name)</span>, <em><strong>do not</strong></em> wish to electronically sign my documents. I will print out and sign paper documents and return them to the Company. I understand this will delay the selection process.</label></form>'
+                    authorizationObject:
+                      header: 'CHOOSE ONE OF THE FOLLOWING OPTIONS:'
+                      selectionType: single
+                      sections:
+                      - title: 'Option #1 - Electronic Signature'
+                        selectionValue: electronic
+                        body: I consent to transacting electronically, including receiving legally required notices electronically. I understand that KarmaCheck, Inc. uses computer technology to ensure that my signed documents are not altered after submission. I agree to allow KarmaCheck, Inc. to validate my signed documents in this way.
+                      - title: 'Option #2 - Manual Signature (will delay your start date)'
+                        selectionValue: manual
+                        body: I <em><strong>do not</strong></em> wish to electronically sign my documents. I will print out and sign paper documents and return them to the Company. I understand this will delay the selection process.
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case does not have e-Signature as a requirement.
+        '500':
+          description: Internal Server Error
+  /case/id/{caseId}/fcra/{language}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The ID of a case.
+    - $ref: '#/components/parameters/language'
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Acknowledge FCRA
+      description: Submits acknowledgement of the FCRA for tracking and auditing purposes. This action creates a case data record with the provided information. The system records the acknowledgment and generates a downloadable PDF file of the acknowledged FCRA document.
+      operationId: post-case-id-caseId-fcra-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case doesn't include the FCRA service, or the candidate already acknowledged it.
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get FCRA
+      description: 'Retrieves a Fair Credit Reporting Act (FCRA) consent document and form that can be presented to and acknowledged by the candidate as part of the onboarding process. If the candidate has already acknowledged it, the response will indicate this as well as provide the `caseDataId` of the acknowledgement, which can be used to retrieve details. These can be used to determine whether the candidate can skip this step if they leave and then continue their onboarding later or on another device, for example.
+
+
+        The FCRA document can be customized. If a customer-specific version doesn''t exist, a default one will be returned.'
+      operationId: get-case-id-caseId-fcra-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - alreadyAck
+                - title
+                - body
+                - authorizationStatement
+                - authorizationObject
+                properties:
+                  alreadyAck:
+                    type: boolean
+                    description: True if the candidate already acknowledged the FCRA document; false otherwise.
+                  title:
+                    type: string
+                    description: Escaped HTML.
+                  header:
+                    type: string
+                    description: Escaped HTML.
+                  body:
+                    type: string
+                    description: Escaped HTML.
+                  authorizationStatement:
+                    type: string
+                    description: Escaped HTML.
+                  authorizationObject:
+                    type: object
+                    required:
+                    - sections
+                    properties:
+                      header:
+                        type: string
+                      selectionType:
+                        type: string
+                        enum:
+                        - single
+                        - multi
+                      sections:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - selectionValue
+                          properties:
+                            title:
+                              type: string
+                            selectionValue:
+                              type: string
+                              description: The postback value when acknowledging the FCRA document.
+                              example: 'true'
+                            body:
+                              type: string
+                  caseDataId:
+                    type: string
+                    description: Returned only if `alreadyAck` is true.
+                    format: uuid
+              examples:
+                Example 1:
+                  value:
+                    alreadyAck: false
+                    title: <div>FCRA Summary of Rights</div>
+                    header: '<div><p><small><b><i>Para información en español, visite  <a target="new" href="https://www.consumerfinance.gov/learnmore">www.consumerfinance.gov/learnmore</a> o escribe a la Consumer Financial Protection Bureau, 1700 G Street N.W., Washington, DC 20552.</i></b></small></p><p><b>A Summary of Your Rights Under the Fair Credit Reporting Act</b></p><p>The federal Fair Credit Reporting Act (FCRA) promotes the accuracy, fairness, and privacy of information in the files of consumer reporting agencies. There are many types of consumer reporting agencies, including credit bureaus and specialty agencies (such as agencies that sell information about check writing histories, medical records, and rental history records). Here is a summary of your major rights under the FCRA. <b>For more information, including information about additional rights, go to <a target="new" href="https://www.consumerfinance.gov/learnmore">www.consumerfinance.gov/learnmore</a> or write to: Consumer Financial Protection Bureau, 1700 G Street N.W., Washington, DC 20552.</b></p></div>'
+                    body: '<div><ul><li><b>fcra - You must be told if information in your file has been used against you.</b> Anyone who uses a credit report or another type of consumer report to deny your application for credit, insurance, or employment - or to take another adverse action against you - must tell you, and must give you the name, address, and phone number of the agency that provided the information.</li><li><b>You have the right to know what is in your file.</b> You may request and obtain all the information about you in the files of a consumer reporting agency (your &quot;file disclosure&quot;). You will be required to provide proper identification, which may include your Social Security number. In many cases, the disclosure will be free. You are entitled to a free file disclosure if:<ul><li>a person has taken adverse action against you because of information in your credit report;</li><li>you are the victim of identity theft and place a fraud alert in your file;</li><li>your file contains inaccurate information as a result of fraud;</li><li>you are on public assistance;•you are unemployed but expect to apply for employment within 60 days.</li></ul><span>In addition, all consumers are entitled to one free disclosure every 12 months upon request from each nationwide credit bureau and from nationwide specialty consumer reporting agencies. See <a target="new" href="https://www.consumerfinance.gov/learnmore">www.consumerfinance.gov/learnmore</a> for additional information.</span></li><li><b>You have the right to ask for a credit score.</b> Credit scores are numerical summaries of your credit-worthiness based on information from credit bureaus. You may request a credit score from consumer reporting agencies that create scores or distribute scores used in residential real property loans, but you will have to pay for it. In some mortgage transactions, you will receive credit score information for free from the mortgage lender.</li><li><b>You have the right to dispute incomplete or inaccurate information.</b> If you identify information in your file that is incomplete or inaccurate, and report it to the consumer reporting agency, the agency must investigate unless your dispute is frivolous. See www.consumerfinance.gov/learnmore for an explanation of dispute procedures.</li><li><b>Consumer reporting agencies must correct or delete inaccurate, incomplete, or unverifiable information.</b> Inaccurate, incomplete, or unverifiable information must be removed or corrected,usually within 30 days. However, a consumer reporting agency may continue to report information it has verified as accurate.</li><li><b>Consumer reporting agencies may not report outdated negative information.</b> In most cases, a consumer reporting agency may not report negative information that is more than seven years old, or bankruptcies that are more than 10 years old.</li><li><b>Access to your file is limited.</b> A consumer reporting agency may provide information about you only to people with a valid need -- usually to consider an application with a creditor, insurer, employer, landlord, or other business. The FCRA specifies those with a valid need for access.•You must give your consent for reports to be provided to employers. A consumer reporting agency may not give out information about you to your employer, or a potential employer, without your written consent given to the employer. Written consent generally is not required in the trucking industry. For more information, go to <a target="new" href="https://www.consumerfinance.gov/learnmore">www.consumerfinance.gov/learnmore</a>.</li><li><b>You may limit &quot;prescreened&quot; offers of credit and insurance you get based on information in your credit report.</b> Unsolicited &quot;prescreened&quot; offers for credit and insurance must include a toll-free phone number you can call if you choose to remove your name and address from the lists these offers are based on. You may opt out with the nationwide credit bureaus at 1-888-5-OPTOUT (1-888-567-8688).</li><li>The following FCRA right applies with respect to nationwide consumer reporting agencies:<br/><b>Consumers Have the Right To Obtain a Security Freeze</b><br/><p><b>You have a right to place a &quot;security freeze&quot; on your credit report, which will prohibit a consumer reporting agency from releasing information in your credit report without your express authorization.</b> The security freeze is designed to prevent credit, loans, and services from being approved in your name without your consent. However, you should be aware that using a security freeze to take control over who gets access to the personal and financial information in your credit report may delay, interfere with, or prohibit the timely approval of any subsequent request or application you make regarding a new loan, credit, mortgage, or any other account involving the extension of credit.</p><p>As an alternative to a security freeze, you have the right to place an initial or extended fraud alert on your credit file at no cost. An initial fraud alert is a 1-year alert that is placed on a consumer''s credit file. Upon seeing a fraud alert display on a consumer''s credit file, a business is required to take steps to verify the consumer''s identity before extending new credit. If you are a victim of identity theft, you are entitled to an extended fraud alert, which is a fraud alert lasting 7 years.</p><p>A security freeze does not apply to a person or entity, or its affiliates, or collection agencies acting on behalf of the person or entity, with which you have an existing account that requests information in your credit report for the purposes of reviewing or collecting the account. Reviewing the account includes activities related to account maintenance, monitoring, credit line increases, and account upgrades and enhancements.</p></li><li><b>You may seek damages from violators.</b> If a consumer reporting agency, or, in some cases, a user of consumer reports or a furnisher of information to a consumer reporting agency violates the FCRA, you may be able to sue in state or federal court.</li><li><b>Identity theft victims and active duty military personnel have additional rights.</b> For more information, visit <a target="new" href="https://www.consumerfinance.gov/learnmore">www.consumerfinance.gov/learnmore</a>.</li></ul><p><b>States may enforce the FCRA, and many states have their own consumer reporting laws. In some cases, you may have more rights under state law. For more information, contact your state or local consumer protection agency or your state Attorney General. For information about your federal rights, contact:</b></p><table width="100%"><thead><tr><th width="50%">TYPE OF BUSINESS:</th><th>CONTACT:</th></tr></thead><tr valign="top"><td>1.a. Banks, savings associations, and credit unions with total assets of over $10 billion and their affiliates</td><td>a. Consumer Financial Protection Bureau<br/>1700 G Street, N.W.<br/>Washington, DC 20552</td></tr><tr valign="top"><td>b. Such affiliates that are not banks, savings associations, or credit unions also should list, in addition to the CFPB:</td><td>b. Federal Trade Commission: Consumer Response Center<br/>600 Pennsylvania Avenue, N.W.<br/>Washington, DC 20580<br/>(877) 382-4357</td></tr><tr valign="top"><td>2. To the extent not included in item 1 above:<br/><br/>a. National banks, federal savings associations, and federal branches and federal agencies of foreign banks</td><td>a. Office of the Comptroller of the Currency<br/>Customer Assistance Group<br/>1301 McKinney Street, Suite 3450<br/>Houston, TX 77010-9050</td></tr><tr valign="top"><td>b. State member banks, branches and agencies of foreign banks (other than federal branches, federal agencies, and Insured State Branches of Foreign Banks), commercial lending companies owned or controlled by foreign banks, and organizations operating under section 25 or 25A of the Federal Reserve Act</td><td>b. Federal Reserve Consumer Help Center<br/>P.O. Box. 1200<br/>Minneapolis, MN 55480<br/></td></tr><tr valign="top"><td>c. Nonmember Insured Banks, Insured State Branches of Foreign Banks, and insured state savings associations</td><td>c. FDIC Consumer Response Center<br/>1100 Walnut Street, Box #11<br/>Kansas City, MO 64106</td></tr><tr valign="top"><td>d. Federal Credit Unions</td><td>d. National Credit Union Administration<br/>Office of Consumer Financial Protection (OCFP)<br/>Division of Consumer Compliance Policy and Outreach<br/>1775 Duke Street<br/>Alexandria, VA 22314</td></tr><tr valign="top"><td>3. Air carriers\tAsst. General Counsel for Aviation Enforcement &amp; Proceedings</td><td>Aviation Consumer Protection Division<br/>Department of Transportation<br/>1200 New Jersey Avenue, S.E.<br/>Washington, DC 20590</td></tr><tr valign="top"><td>4. Creditors Subject to the Surface Transportation Board</td><td>Office of Proceedings, Surface Transportation Board<br/>Department of Transportation<br/>395 E Street, S.W.<br/>Washington, DC 20423</td></tr><tr valign="top"><td>5. Creditors Subject to the Packers and Stockyards Act, 1921</td><td>Nearest Packers and Stockyards Administration area supervisor</td></tr><tr valign="top"><td>6. Small Business Investment Companies</td><td>Associate Deputy Administrator for Capital Access<br/>United States Small Business Administration<br/>409 Third Street, S.W., Suite 8200<br/>Washington, DC 20416</td></tr><tr valign="top"><td>7. Brokers and Dealers</td><td>Securities and Exchange Commission<br/>100 F Street, N.E.<br/>Washington, DC 20549</td></tr><tr valign="top"><td>8. Federal Land Banks, Federal Land Bank Associations, Federal Intermediate Credit Banks, and Production Credit Associations</td><td>Farm Credit Administration<br/>1501 Farm Credit Drive<br/>McLean, VA 22102-5090</td></tr><tr valign="top"><td>9. Retailers, Finance Companies, and All Other Creditors Not Listed Above</td><td>Federal Trade Commission: Consumer Response Center<br/>600 Pennsylvania Avenue, N.W.<br/>Washington, DC 20580<br/>(877) 382-4357</td></tr></table></div>'
+                    authorizationStatement: '<form><input type=''checkbox'' readonly=''''  style=''-fs-checkbox-style: check;'' id=''signatureTypeElectronic'' name=''signatureType'' value=''electronic''/><label for=''signatureTypeElectronic''>I acknowledge receipt of the Summary of Your Rights Under the Fair Credit Reporting Act (FCRA) and certify that I have read and understand that document.</label></form>'
+                    authorizationObject:
+                      sections:
+                      - selectionValue: 'true'
+                        body: I acknowledge receipt of the Summary of Your Rights Under the Fair Credit Reporting Act (FCRA) and certify that I have read and understand that document.
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case does not have FCRA as a requirement.
+        '500':
+          description: Internal Server Error
+  /case/id/{caseId}/intldisclosure/{language}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The ID of a case.
+    - $ref: '#/components/parameters/language'
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Acknowledge International Disclosure
+      description: Submits acknowledgement of an International Disclosure document for tracking and auditing purposes. This action creates a case data record with the provided information. The system records the acknowledgment and generates a downloadable PDF file of the acknowledged disclosure.
+      operationId: post-case-id-caseId-intldisclosure-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegalAcknowledgmentDisclosure'
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case doesn't have the specified disclosure service, or the candidate already acknowledged it.
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get International Disclosure
+      description: Retrieves an International Disclosure document to present to the candidate so that the candidate can acknowledge and continue the onboarding process. If the candidate has already acknowledged the disclosure, the response will indicate this and provide a valid `caseDataId` so that the details of the previous acknowledgement can be retrieved. This can also be used to determine whether the candidate can skip this specific disclosure step if they leave and then continue their onboarding later or on another device, for example.
+      operationId: get-case-id-caseId-intldisclosure-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - alreadyAck
+                - title
+                - body
+                - authorizationStatement
+                - authorizationObject
+                properties:
+                  alreadyAck:
+                    type: boolean
+                    description: True if the candidate already acknowledged the disclosure; false otherwise.
+                  title:
+                    type: string
+                    description: Escaped HTML.
+                  header:
+                    type: string
+                    description: Escaped HTML.
+                  body:
+                    type: string
+                    description: Escaped HTML.
+                  authorizationStatement:
+                    type: string
+                    description: Escaped HTML.
+                  authorizationObject:
+                    type: object
+                    required:
+                    - sections
+                    properties:
+                      header:
+                        type: string
+                      selectionType:
+                        type: string
+                        enum:
+                        - single
+                        - multi
+                      sections:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - selectionValue
+                          properties:
+                            title:
+                              type: string
+                            selectionValue:
+                              type: string
+                              description: The postback value when calling the corresponding acknowledge endpoint.
+                              example: signature
+                            body:
+                              type: string
+                  caseDataId:
+                    type: string
+                    description: Returned only if `alreadyAck` is true.
+                    format: uuid
+                  signature:
+                    type: string
+                    description: Returned only if `alreadyAck` is true. For candidates who onboarded using KarmaCheck's onboarding experience, this is the value that the candidate entered into the signature input field on the legal step, which might not be exactly the same as the name that the case was ordered under.
+              examples:
+                Example 1:
+                  value:
+                    alreadyAck: false
+                    title: <div>International Disclosure Acknowledgment and Authorization for Background Check</div>
+                    header: <div>Disclosure regarding background investigation and investigative consumer reports, a summary of your rights under the Fair Credit Reporting Act</div>
+                    body: <div><p><span>I acknowledge receipt of the separate documents entitled DISCLOSURE REGARDING BACKGROUND INVESTIGATION, A SUMMARY OF YOUR RIGHTS UNDER THE FAIR CREDIT REPORTING ACT and the DISCLOSURE FOR INVESTIGATIVE CONSUMER REPORT and certify that I have read and understand those documents. </span></p><p><span>In connection with your employment application with Example Company (the “Company”), this notice is intended to inform you that a consumer report(s) (also known as “a background check”) may be obtained on you from a consumer reporting agency for employment purposes. The reports may contain information about you relating to your criminal information or history, driving and/or motor vehicle records, education and/or employment history, social media, or other background checks, inclusive of but not necessarily limited to records and information from </span><span>any law enforcement agency, administrator, state or federal agency, institution, school or university (public or private), information service bureau, employer, or insurance company</span><span>. </span><span>I agree that a facsimile (&quot;fax&quot;), electronic or photographic copy of this Authorization shall be as valid as the original.</span></p><p><span>The report(s) is being prepared by our background screening vendor, KarmaCheck, Inc. and its associated partners or vendors.</span></p><p><span>The scope of this notice and below authorization is not limited to the present and, if you are hired, will continue throughout the course of your employment and allow the Company to conduct future screenings for retention, promotion or reassignment, as permitted by law and unless revoked by you in writing.</span></p></div>
+                    authorizationStatement: '<div><p><b><u><span>AUTHORIZATION</span></u></b></p><p>By signing below, you authorize the obtaining of a consumer report by the Company at any time after receipt of this authorization and throughout the course of your employment, as described above.</p><form><p><input type=''checkbox'' readonly='''' ##SEND_REPORT## style=''-fs-checkbox-style: check;'' /><label>Check the box if you would like to receive a copyÏ of the investigative consumer report, free of charge, if one is obtained by the Company.</label></p><p>Signature</p><p><input type=''text'' readonly='''' value=''''/></p></form></div>'
+                    authorizationObject:
+                      sections:
+                      - title: AUTHORIZATION
+                        selectionValue: signature
+                        body: By signing below, you authorize the obtaining of a consumer report by the Company at any time after receipt of this authorization and throughout the course of your employment, as described above.
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case does not have the specified disclosure as a requirement.
+        '500':
+          description: Internal Server Error
+  /case/id/{caseId}/{disclosureType}/{language}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The ID of a case.
+    - schema:
+        type: string
+        enum:
+        - disclosures
+        - customdynamicdisclosure
+      name: disclosureType
+      in: path
+      required: true
+      description: The type of disclosure.
+    - $ref: '#/components/parameters/language'
+    put:
+      tags:
+      - Candidate onboarding
+      summary: Acknowledge location-specific disclosures
+      description: Submits acknowledgement of location-specific disclosures for tracking and auditing purposes. This action creates a case data record with the provided information. The system records the acknowledgment and generates a downloadable PDF file of the acknowledged disclosures.
+      operationId: put-case-id-caseId-disclosureType-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      requestBody:
+        description: 'All disclosures that are returned in the [Request location-specific disclosures](paths/~1case~1id~1{caseId}~1{disclosureType}~1{language}/post) API call must be included. If any expected disclosures are *not* acknowledged in this request, the entire request will be rejected and nothing will be saved for this request.
+
+
+          <!-- theme: info -->
+
+          > ##### Note
+
+          >
+
+          > Inclusion of a `legalType` in the request list indicates that the candidate acknowledged that legal disclosure via an input. The client should *not* include the `legalType` in the post request until that acknowledgement happens.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegalAcknowledgmentDisclosures'
+            examples:
+              Example 1:
+                value:
+                  sendReport: true
+                  list:
+                  - legalType: general-ca-disclosure
+                    signature: Alex Smith
+                  - legalType: state-city-all-disclosure
+                  - legalType: custom-ab-ca-disclosure-1
+                    signature: Alex Smith
+                  - legalType: custom-ab-ca-disclosure-2
+                    signature: Alex Smith
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: 'This response indicates one of the following:
+
+            - The candidate already acknowledged all disclosures of this type.
+
+            - The case doesn''t have this disclosure in its service group.
+
+            - The request doesn''t have all of the required data for all of the disclosures.'
+        '500':
+          description: Internal Server Error
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Request location-specific disclosures
+      description: Retrieves location-specific disclosure documents and forms that can be presented to and acknowledged by the candidate as part of the onboarding process.
+      operationId: post-case-id-caseId-disclosureType-language
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The language code (e.g. en-US)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - opportunityState
+              - addressState
+              properties:
+                opportunityState:
+                  type: string
+                  description: The state associated with the opportunity, such as the location of a job for which a candidate is undergoing a background check.
+                opportunityCity:
+                  type: string
+                  description: The city associated with the opportunity, such as the location of a job for which a candidate is undergoing a background check.
+                addressState:
+                  type: string
+                  description: The candidate's state of residence.
+                addressCity:
+                  type: string
+                  description: The candidate's city of residence.
+        description: 'Required disclosures vary from locale to locale, so location information in the request is used to return the relevant documents.
+
+
+          Once *all* disclosures have been [acknowledged](paths/~1case~1id~1{caseId}~1{disclosureType}~1{language}/put), calling this endpoint again will indicate that with `alreadyAck` and provide the `caseDataId` of the acknowledgment, which can be used to retrieve details. These can be used to determine whether the candidate can skip this step if they leave and then continue their onboarding later or another device, for example. Additionally, the location data in the request will be ignored.
+
+
+          However, if this endpoint is called again while some or all disclosures from the previous response remain unacknowledged, the endpoint will use the location information in the current request to return new documents and previously saved data will be discarded.
+
+          '
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - alreadyAck
+                properties:
+                  alreadyAck:
+                    type: boolean
+                    description: True if the candidate already acknowledged the disclosures; false otherwise.
+                  caseDataId:
+                    type:
+                    - string
+                    - array
+                    description: Returned only if `alreadyAck` is true.
+                    format: uuid
+                    items: {}
+                  list:
+                    type: array
+                    description: Returned only if `alreadyAck` is false.
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - legalType
+                      - language
+                      - title
+                      - body
+                      - authorizationStatement
+                      - authorizationObject
+                      - crStamp
+                      - modStamp
+                      properties:
+                        id:
+                          type: string
+                          description: The unique identifier of the legal document type.
+                        legalType:
+                          $ref: '#/components/schemas/LegalType'
+                        language:
+                          type: string
+                          description: The [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) code representing the language of the document.
+                        title:
+                          type: string
+                          description: Escaped HTML.
+                        header:
+                          type: string
+                          description: Escaped HTML.
+                        body:
+                          type: string
+                          description: Escaped HTML.
+                        authorizationStatement:
+                          type: string
+                          description: Escaped HTML.
+                        authorizationObject:
+                          type: object
+                          required:
+                          - sections
+                          properties:
+                            header:
+                              type: string
+                            selectionType:
+                              type: string
+                              enum:
+                              - single
+                              - multi
+                            sections:
+                              type: array
+                              items:
+                                type: object
+                                required:
+                                - selectionValue
+                                properties:
+                                  title:
+                                    type: string
+                                  selectionValue:
+                                    type: string
+                                    description: The value used when calling the corresponding acknowledgment endpoint for the legal document.
+                                    example: signature
+                                  body:
+                                    type: string
+                        crStamp:
+                          type: string
+                          format: date-time
+                        modStamp:
+                          type: string
+                          format: date-time
+              examples:
+                Before acknowledgement:
+                  value:
+                    alreadyAck: false
+                    list:
+                    - id: 681ab1fe-f862-4130-a6c1-1ca0e7b975bd
+                      legalType: general-ca-disclosure
+                      title: <div>Acknowledgment and Authorization for Background Check (general-ca)</div>
+                      body: <div><p ><span>gen-cs-disc - Please be advised that KarmaCheck (the &quot;Company&quot;) will procure one or more investigative consumer reports, as that term is defined under California law, about you for employment purposes, including for decisions regarding hiring, promotion, reassignment, or retention as an employee. Such reports may include information on your character, general reputation, personal characteristics, and mode of living.</span></p><p>The investigation will be conducted by KarmaCheck Inc. and its associated partners or vendors. KarmaCheck, Inc., 595 Pacific Ave. 4th floor, San Francisco, CA 94133, (877) 732-2129, www.karmacheck.com</p><p>The nature and scope of the report may include criminal history checks and other public records, educational verification, employment verification, social media, and motor vehicle records and the reports will be used for employment screening purposes.</p><br/><p><b>NOTICE – BACKGROUND INVESTIGATION </b></p><p ><b><u>CALIFORNIA RESIDENTS</u></b></p><p >This summary of the provisions of California Civil Code section 1786.22 is being provided to you pursuant to state law. </p><p>Your employer intends to obtain information about you from an investigative consumer reporting agency, as defined under California law, for employment purposes.<b> </b></p><p>Under California law you are entitled to visually inspect all files maintained about you by an investigative consumer reporting agency (ICRA), such as KarmaCheck, Inc., upon request and presentation of proper identification during normal business hours and on reasonable notice as follows:</p><ul > <li ><b>In person</b>.  You may request a copy of your file.  The ICRA may charge you for the actual copying costs associated with providing you with a copy of your file.</li> <li ><b>By telephone</b>.  A summary of all information contained in the ICRA’s file about you will be provided to you via telephone, if you have made a written request for telephone disclosure, and the toll charge, if any, for the telephone call is prepaid by or charged directly to you.</li> <li ><b>By certified mail.</b>  You may make a written request for copies to be sent to a specified addressee.  ICRA’s complying with requests for certified mailings shall not be liable for disclosures to third parties caused by mishandling of mail after such mailings leave the ICRA.</li></ul><p >&quot;Proper Identification&quot; includes documents such as a valid driver’s license, social security account number, military identification card, and credit cards.  If an ICRA is unable to reasonably identify you on the basis of these documents, they may require additional information concerning your employment and personal or family history in order to verify your identity. </p><p >The ICRA will provide trained personnel to explain any information furnished to you and will provide a written explanation of any coded information contained in files maintained on you.  This written explanation will be provided whenever a file is provided to you for visual inspection. </p><p >You may be accompanied by one other person of your choosing, who must furnish reasonable identification.  An ICRA may require you to furnish a written statement granting permission to the ICRA to discuss your file in such person’s presence.</p></div>
+                      header: <div>Disclosure regarding background investigation and investigative consumer reports as required by California law</div>
+                      authorizationStatement: '<div><p><b><u><span>AUTHORIZATION FOR INVESTIGATIVE CONSUMER REPORTS</span></u></b></p><p>By signing below, I hereby authorize the Company to procure investigative consumer reports concerning me for employment purposes at all times prior to my employment and, if I am hired/employed, throughout the duration of my employment, as permitted by law and unless revoked by me in writing.</p><form><p><input type=''checkbox'' readonly='''' ##SEND_REPORT## style=''-fs-checkbox-style: check;'' /><label>Check the box if you would like to receive a copy of the investigative consumer report, free of charge, if one is obtained by the Company.</label></p><p>Signature</p><p><input type=''text'' readonly='''' value=''##ELECTRONIC_SIGNATURE##''/></p></form></div>'
+                      language: en
+                      crStamp: '2020-01-04T14:39:30.000+00:00'
+                      modStamp: '2024-02-26T19:53:16.000+00:00'
+                      authorizationObject:
+                        sections:
+                        - title: AUTHORIZATION FOR INVESTIGATIVE CONSUMER REPORTS
+                          selectionValue: signature
+                          body: By signing below, I hereby authorize the Company to procure investigative consumer reports concerning me for employment purposes at all times prior to my employment and, if I am hired/employed, throughout the duration of my employment, as permitted by law and unless revoked by me in writing.
+                    - id: 42d3de15-ad5e-46d4-8af3-cf24581210db
+                      legalType: state-city-all-disclosure
+                      title: <div>Additional State Disclosures and Notices (state city all)</div>
+                      body: '<div>    <p><b><span>state-city-all-disc - Minnesota: </span></b><span>If you are a resident of Minnesota or applying for employment at a location within the State of Minnesota, you have the right to submit a written request to KarmaCheck, Inc. for a complete and accurate disclosure of the nature and scope of any consumer report the Company ordered about you. KarmaCheck, Inc.  must provide you with this disclosure within five business days after its receipt of your request or the report was requested by the Company, whichever date is later.  </span></p> <p><b><span>New Jersey: </span></b><span>If you are a New Jersey resident or applying for employment at a location within the State of New Jersey, by signing below you acknowledge receipt of the New Jersey Fair Credit Reporting Act provisions.</span></p> <p><b><span>New York: </span></b><span>If you are a New York resident or applying for employment at a location within the State of New York, by signing below you acknowledge receipt of a copy of </span><a href="http://www.labor.ny.gov/formsdocs/wp/correction-law-article-23a.pdf"><span>Article 23-A</span></a><span> of the New York Correction Law. You have the right to inspect and receive a copy of any investigative consumer report requested by the Company by contacting KarmaCheck, Inc 877-732-2129.</span></p> <p><b><span>Vermont</span></b><span>: If you are a Vermont resident or applying for employment at a location within the State of Vermont, by signing below you acknowledge receipt of the NOTICE – BACKGROUND INVESTIGATION AND USE OF CREDIT INFORMATION.</span></p> <p><b><span>Washington State</span></b><span>:  If you are a Washington resident or applying for employment at a location within the State of Washington, you have the right to request from KarmaCheck, Inc. a written summary of your rights and remedies under the Washington Fair Credit Reporting Act.</span></p><p><b><span>Massachusetts and Oklahoma:  </span></b><span>If you are a resident of Massachusetts or Oklahoma or applying for employment in one of these states, please check the box in the Disclosure and Acknowledgement peeiouv to this if you would like to receive a copy of your consumer report, free of charge, if one is obtained by the Company. </span></p>    <br/>    <p><b><u>NEW JERSEY RESIDENTS</u></b></p>    <p><b>New Jersey Residents or Employees</b> – this summary of the provisions of the New Jersey Fair Credit Reporting Act (“NJFCRA”) is being provided to you pursuant to state law (N.J.S.A. § 56:11-28 et seq.) </p>    <p>Before an employer can obtain a consumer report about you from a consumer reporting agency they must provide you with a clear and conspicuous disclosure in writing that such may be obtained for employment purposes.  You must provide written consent to the procurement, for employment purposes, of a consumer report.</p>    <p>When using a consumer report for employment purposes, before taking adverse action based in whole or in part on the report, an employer must provide you with a copy of the consumer report and a description in writing of your rights under the federal Fair Credit Reporting Act as well as the NJFCRA.</p>    <p>You must be afforded a reasonable opportunity to dispute, with the consumer reporting agency, any information on which the employer relied upon in your consumer report.</p>    <p>You can request from a consumer reporting agency all information in your file, upon proper identification.  This includes sources of information and identification of each person who procured a consumer report for employment purposes during the two-year period preceding your request. These requests must be made during normal business hours and on reasonable notice. It can be done in person or by telephone, if you have made a written request and pay the toll charge. A consumer reporting agency must provide trained personnel to explain to you any information in the consumer report.</p>    <p>You can dispute inaccurate information with the consumer reporting agency. If you dispute the completeness or accuracy of any of the information in your file, the consumer reporting agency must reinvestigate free of charge during a 30-day period. A consumer reporting agency must provide written notice to you of the results of the reinvestigation not later than five business days after completion of the reinvestigation.</p>    <p>If, after a reinvestigation, any information disputed by you is found to be inaccurate or incomplete or cannot be verified, the consumer reporting agency must promptly delete that item of information from your file or modify that item of information, as appropriate, based on the results of the reinvestigation.</p>    <p> &#160; &#160; &#160; &#160; &#160;You can seek damages for noncompliance under the NJFCRA.</p>    <br/>    <p><b><u>NEW YORK RESIDENTS</u></b></p>    <p><b>New York Residents or Employees</b> – this summary of the provisions of the New York Correction Law is being provided to you pursuant to state law. </p>    <p><b>Article 23-A</b></p>    <p><b>Licensure and Employment of Persons Previously </b></p>    <p><b>Convicted of One or More Criminal Offenses</b></p>    <p><b>§ 750. Definitions</b></p>    <p>For the purposes of this article, the following terms shall have the following meanings:</p>    <p>(1) “Public agency” means the state or any local subdivision thereof, or any state or local department, agency, board or commission.</p>    <p>(2) “Private employer” means any person, company, corporation, labor organization or association which employs ten or more persons.</p>    <p>(3) “Direct relationship” means that the nature of criminal conduct for which the person was convicted has a direct bearing on his fitness or ability to perform one or more of the duties or responsibilities necessarily related to the license, opportunity, or job in question.</p>    <p>(4) “License” means any certificate, license, permit or grant of permission required by the laws of this state, its political subdivisions or instrumentalities as a condition for the lawful practice of any occupation, employment, trade, vocation, business, or profession. Provided, however, that “license” shall not, for the purposes of this article, include any license or permit to own, possess, carry, or fire any explosive, pistol, handgun, rifle, shotgun, or other firearm.</p>    <p>(5) “Employment” means any occupation, vocation or employment, or any form of vocational or educational training. Provided, however, that “employment” shall not, for the purposes of this article, include membership in any law enforcement agency.</p>    <p><b>§ 751. Applicability </b></p>    <p>The provisions of this article shall apply to any application by any person for a license or employment at any public or private employer, who has previously been convicted of one or more criminal offenses in this state or in any other jurisdiction, and to any license or employment held by any person whose conviction of one or more criminal offenses in this state or in any other jurisdiction preceded such employment or granting of a license, except where a mandatory forfeiture, disability or bar to employment is imposed by law, and has not been removed by an executive pardon, certificate of relief from disabilities or certificate of good conduct. Nothing in this article shall be construed to affect any right an employer may have with respect to an intentional misrepresentation in connection with an application for employment made by a prospective employee or previously made by a current employee.</p>    <p><b>§ 752. Unfair discrimination against persons previously convicted of one or more criminal offenses prohibited</b></p>    <p>No application for any license or employment, and no employment or license held by an individual, to which the provisions of this article are applicable, shall be denied or acted upon adversely by reason of the individual&#39;s having been previously convicted of one or more criminal offenses, or by reason of a finding of lack of “good moral character” when such finding is based upon the fact that the individual has previously been convicted of one or more criminal offenses, unless:</p>    <p>(1) there is a direct relationship between one or more of the previous criminal offenses and the specific license or employment sought or held by the individual; or</p>    <p>(2) the issuance or continuation of the license or the granting or continuation of the employment would involve an unreasonable risk to property or to the safety or welfare of specific individuals or the general public.</p>    <p><b>§ 753. Factors to be considered concerning a previous criminal conviction; presumption</b></p>    <p>1. In making a determination pursuant to section seven hundred fifty-two of this chapter, the public agency or private employer shall consider the following factors:</p>    <p>(a) The public policy of this state, as expressed in this act, to encourage the licensure and employment of persons previously convicted of one or more criminal offenses.</p>    <p>(b) The specific duties and responsibilities necessarily related to the license or employment sought or held by the person.</p>    <p>(c) The bearing, if any, the criminal offense or offenses for which the person was previously convicted will have on his fitness or ability to perform one or more such duties or responsibilities.</p>    <p>(d) The time which has elapsed since the occurrence of the criminal offense or offenses.</p>    <p>(e) The age of the person at the time of occurrence of the criminal offense or offenses.</p>    <p>(f) The seriousness of the offense or offenses.</p>    <p>(g) Any information produced by the person, or produced on his behalf, in regard to his rehabilitation and good conduct.</p>    <p>(h) The legitimate interest of the public agency or private employer in protecting property, and the safety and welfare of specific individuals or the general public.</p>    <p>2. In making a determination pursuant to section seven hundred fifty-two of this chapter, the public agency or private employer shall also give consideration to a certificate of relief from disabilities or a certificate of good conduct issued to the applicant, which certificate shall create a presumption of rehabilitation in regard to the offense or offenses specified therein.</p>    <p><b>§ 754. Written statement upon denial of license or employment</b></p>    <p>At the request of any person previously convicted of one or more criminal offenses who has been denied a license or employment, a public agency or private employer shall provide, within thirty days of a request, a written statement setting forth the reasons for such denial.</p>    <p><b>§<i> </i>755. Enforcement</b></p>    <p>1. In relation to actions by public agencies, the provisions of this article shall be enforceable by a proceeding brought pursuant to article seventy-eight of the civil practice law and rules.</p>    <p>2. In relation to actions by private employers, the provisions of this article shall be enforceable by the division of human rights pursuant to the powers and procedures set forth in article fifteen of the executive law, and, concurrently, by the New York city commission on human rights.</p><br/><p><b><u>WASHINGTON D.C. RESIDENTS</u></b></p><p>The District of Columbia Fair Criminal Record Screening Amendment Act of 2014 only allows businesses to withdraw a conditional job offer or take an adverse action because of an applicant&#39;s criminal conviction(s) for a legitimate business reason. Your conditional job offer was revoked based on a review of your past criminal conviction(s). This decision must be considered reasonable in light of six factors.*</p><p>If you believe your job offer was improperly revoked based on the employer&#39;s review of your criminal conviction, you have the right to:</p><ul><li>Within 30 days of the action, request from the employer a copy of all records related to the consideration of your application, including your criminal record. The file must then be provided to you within 30 days of your request.</li><li>File a complaint with the District of Columbia Office of Human Rights (OHR). It is cost free and does not require an attorney. OHR will review the facts related to the business&#39; decision, and may initiate a mediation and investigation.</li></ul><p>Complaints must be filed with OHR within one year of the adverse action, and can be filed online at ohr.dc.gov/page/complaints, or at 441 4th Street NW, Suite 570N, Washington,DC, 20010.</p><p>Penalties can be imposed against the business if a violation is found, with half the penalty being awarded to you as the applicant and the other half to the District of Columbia government.</p><p>For more information about your rights under the Fair Criminal Record Screening Amendment Act or about the complaint process at OHR, visit ohr.dc.gov/page/returning citizens or call 202.727.4559.</p><p><span>* <i>The employer&#39;s legitimate business reason must be reasonable in light of the following factors: A reasonable business purpose must be determined using six factors:</i> (1) Specific duties and responsibilities necessarily related to the employment; (2)Fitness or ability to perform one or more job duties or responsibilities given the offense; (3) Time elapsed since the offense;(4) Age of the applicant when the offense occurred; (5) Frequency and seriousness of the offense; and (6) Any information about the applicant that indicates rehabilitation or good conduct since the offense occurred.</span></p><br/>    <p><b><u>WASHINGTON STATE RESIDENTS </u></b></p>    <p><b>Washington State Residents or Employees</b> – this summary of the provisions of the Washington State Fair Credit Reporting Act (WFCRA) is being provided to you pursuant to state law.  The WFCRA is designed to promote accuracy, fairness, consumer confidentiality and the proper use of credit data by each consumer reporting agency (CRA) in accordance with the requirements of the WFCRA.</p>    <p>The WFCRA is modeled after, and generally provides the same rights as, the federal Fair Credit Reporting Act (FCRA) (15 U.S.C. § 1681 <i>et seq.</i>)  A summary of your rights under the FCRA is available at <a href="http://files.consumerfinance.gov/f/201504_cfpb_summary_your-rights-under-fcra.pdf">http://files.consumerfinance.gov/f/201504_cfpb_summary_your-rights-under-fcra.pdf</a>.</p>    <p>The complete text of the WFCRA RCW 19.182, can be obtained from the:</p>    <div>        <span>Washington Code Revisers Office</span><br/>        <span>P.O. &#160;Box &#160;40551</span><br/>        <span>Olympia, &#160;WA &#160;98504</span><br/>    </div>    <p>Online &#160;at &#160;<a href="http://apps.leg.wa.gov/rcw/default.aspx?cite=19.182&amp;full=true%20-%2019.182.070">http://apps.leg.wa.gov/rcw/default.aspx?cite=19.182&amp;full=true%20-%2019.182.070</a>.  </p>    <p>One significant distinction between the FCRA and the WFCRA is that in Washington, an employer may not obtain a consumer report that indicates the consumer&#39;s credit worthiness, credit standing, or credit capacity, unless (1) the information is substantially job related and the employer&#39;s reason(s) for using the information are disclosed in writing, or (2) the information is required by law.</p>    <p>The following is a summary of your major rights under the WFCRA: </p>    <ul>        <li><b>You will be required to provide proper identification before reviewing your consumer file.</b>Proper identification may include your Social Security number. You may request to review your file at any time. A CRA will make disclosures of your file  available to you during normal business hours and on reasonable notice. File disclosures may be done in person or by telephone, if you have made a written request and pay the toll charge, as applicable, or by any other reasonable means. A CRA will provide trained personnel to explain to you any information in your consumer report. Upon request, and proper identification, you may be permitted to bring one additional person with you to review your consumer file. If the CRA provides you with a credit score, the agency will also provide you with an explanation for that credit score.</li>        <li><b>You have a right to know what is in your file. </b>Upon proper identification,<b> </b>you may request and obtain all the information about you in the CRA&#39;s files, although medical information may be withheld, and instead will be disclosed to a health care provider of your choice. Your health care provider may disclose your medical information to you directly. Your file disclosure will include all items of information the CRA maintains about you, including sources of information (except sources acquired solely for      use in an investigative report). The file will also identify each person who procured your consumer report for employment purposes during the two-year period preceding your request, or any person who procured your report for any other purpose within the six-months prior to your request.  When applicable, a record of inquiries the CRA received identifying you in a credit transaction that was not initiated by you in the six-months prior to your file disclosure request.  Each of these records will include the name of the person or trade name of the business that sought your consumer file, and upon your request, their respective addresses.</li>        <li><b>You are entitled to one free consumer report every 12 months, upon request.</b> In many cases, your file disclosure will be free. You may be charged a limited fee for a second or subsequent report requested by you during a 12 month period. You will also not be charged for:</li>        <ul>            <li>a consumer report if a person has taken adverse action against you because of information in your report;</li>            <li>the reinvestigation of information you dispute; or</li>            <li>corrected reports resulting from the deletion of inaccurate or unverifiable information.</li>        </ul>        <li><b>You must be told if information in your file has been used against you. </b>If a person takes an adverse action against you that is based, in whole or in part, on information contained in a consumer report, that person must tell you (usually, through a written notice), and must give you the name, address, and telephone number of the CRA that provided the information.</li>    </ul>    <ul>        <li><b>You have a right to dispute incomplete or inaccurate information. </b>If you identify information in your file that is incomplete or inaccurate, and you notify the CRA directly of the dispute, the CRA will reinvestigate without charge and record the current status of the disputed information before the end of thirty business days, unless your dispute is frivolous.  Upon completion of the reinvestigation, within five business days of the CRA&#39;s decision, the agency will provide you notice in writing or through another authorized means, of the results of the reinvestigation.  If the CRA determines that your dispute is frivolous the agency will inform you of that determination, along with its reasons, and your rights under the WFCRA within five business days.</li>        <li><b>Consumer reporting agencies must correct or delete inaccurate, incomplete, or unverifiable information. </b>Upon completion of the reinvestigation, if the information you disputed is found to be inaccurate or cannot be verified, the CRA must delete the information and notify you of the correction. Information that has been found to be inaccurate will not be reinserted into your consumer file, unless the furnisher of the information verifies the accuracy and completeness of that information.  In such circumstances, you will be notified, within thirty business days that the information is being reinserted into your file.  If the reinvestigation does not resolve your dispute, you may file with the CRA a brief statement (that may be limited to 100 words) setting forth the nature of your dispute. The statement will be placed in your consumer file and in any subsequent report containing the information you disputed.</li>        <li><b>You have the right to request that users of your consumer report be notified of any disputed information they previously received within the statutory time frame.  </b>After certain disputed information has been deleted or you have filed a statement of dispute, you may request that the CRA provides notification of that deleted item or item of dispute to any person you designate who has, within two years received your consumer report for employment purposes, or who has within six months received your report for any other purpose, if the furnished report contained the deleted or disputed information.</li>        <li><b>Consumer reporting agencies may not report outdated negative information. </b>In most cases, a CRA may not report negative information that is more than seven years old, or bankruptcies that are more than ten years old.</li>        <li><b>You have the right to advanced disclosure of any fees.</b>  Any charges for file disclosures or other requested actions to be taken by the CRA must be disclosed to you before the information is provided or the action is taken.</li>        <li><b>Access to your file is limited. </b>A CRA may provide information about you only to people with a valid need – usually to consider an application with a creditor, insurer, employer, landlord, court or government agency, or in accordance with your written instructions. </li>        <li><b>You must be notified if reports are provided to employers. </b>A CRA may not give out information about you to employers without your knowledge. A potential employer must make a clear and conspicuous disclosure in writing to you or obtain your consent before obtaining a report. A current employer may not receive a report unless it has given you written notice that reports may be used for employment purposes.</li>        <li><b>You must be notified in writing if a person seeks an investigative consumer report about you. </b>An investigative consumer report may include information as to your character, general reputation, personal characteristics, and mode of living.  Within a reasonable period of time after receiving such notice, you may request, in writing, a disclosure as to the nature and scope of the investigation requested—which will be delivered to you within five days of your request.</li>        <li><b>You may limit “prescreened” offers of credit and insurance you get based on information in your credit report. </b>You may elect not to receive unsolicited “prescreened” offers for credit and insurance by using the CRA&#39;s notification system to remove your name and address from the lists these offers are based on. You may opt-out with the nationwide credit bureaus at 1-888-5-OPTOUT (1-888-567-8688).</li>        <li><b>You may place a security freeze on your credit report. </b>Under certain circumstances, you may request that a security freeze be placed on your credit report to prevent it from being shared with potential creditors or insurance companies when making determinations related to your eligibility for credit. </li>        <li><b>You may be able to block information resulting from identity theft from appearing on your credit report. </b>If you are a victim of identity theft, certain CRAs must permanently block misinformation resulting from that theft from appearing on your credit report. You must provide the CRA with a copy of a police report as evidence of your claim before it can place the block on your report.</li>        <li><b>You may seek damages from violators. </b>If a CRA, a user of consumer reports, or a furnisher of information to a CRA violates the WFCRA, and you have a legal basis for a claim under the WFCRA, you may be able to bring a legal action in court to assert your rights under the WFCRA.  The applicable statute of limitations is specified in Wash. Stat. § &#160;19.182.120 —which is generally two years from the date the cause of action accrued.  Consumers who prevail on claims to enforce the WCFRA may obtain actual damages, monetary penalties, reasonable attorneys&#39; fees, costs, and other relief.</li>    </ul>    <p><u>For questions or concerns regarding the WFCRA, please contact</u>:</p>    <div>    <span>Office of the Attorney General</span><br/>    <span>Consumer Protection Division</span><br/>    <span>800 5th Avenue, Suite 2000</span><br/>    <span>Seattle, Washington 98104-3188</span><br/>    <span>Phone 1-800-551-4636 or (206) 464-6684</span><br/>    <span>Statewide Toll-Free TDD: 800-833-6388</span>    </div>    <p><u>Any complaints by consumers under state law may be directed to</u>:</p>    <p>The Attorney General&#39;s Office via U.S. Mail or Online.  </p>    <p>Information and forms related to filing a consumer complaint can be found at:</p>    <p><a href="http://www.atg.wa.gov/FileAComplaint.aspx">http://www.atg.wa.gov/FileAComplaint.aspx</a></p>    <p>Additional information about consumer issues can be found at: </p>    <p><a href="http://www.atg.wa.gov/consumer-issues">http://www.atg.wa.gov/consumer-issues</a></p>    <br/>    <hr/>    <p><b><u>SAN FRANCISCO, CALIFORNIA NOTICE IN ENGLISH:</u></b></p>    <p><b><span>CITY AND COUNTY OF SAN FRANCISCO EDWIN M. LEE, MAYOR</span></b></p>    <h3><span>NOTICE TO JOB APPLICANTS AND EMPLOYEES</span></h3>    <h4><span>San Francisco Fair Chance Ordinance Police Code, Article 49</span></h4>    <p><b><span>Starting August 13, 2014, the Fair Chance Ordinance (San Francisco Police Code, Article 49) requires employers to follow strict rules regarding the use of arrest and conviction records in hiring and employment decisions.</span></b><span> The ordinance covers job applicants and employees who would be or are performing work in whole, or in substantial part, in San Francisco and applies to employers who have 20 or more employees (regardless of the employees&#39; locations).</span></p>    <p><b><span>Certain matters are off-limits.</span></b><span > An employer may </span><i><span>never</span></i><span> ask about, require disclosure of, or consider: an arrest not leading to a conviction (other than an unresolved arrest that is still undergoing criminal investigation or trial); participation in a diversion or deferral of judgment program; a conviction that has been expunged or made inoperative; any determination in the juvenile justice system; a conviction more than 7 years old; and a criminal offense other than a felony/misdemeanor. Matters that are off-limits cannot be used by the employer for any reason at any stage of the hiring process.</span></p>    <p><b><span>An employer cannot ask about an individual&#39;s conviction history or unresolved arrests at the start of the hiring process.</span></b><span> This includes through a job application form, informal conversation, or otherwise.</span></p>    <p><b><span>A mandatory interactive process for matters not off-limits.</span></b><span> Only after a live interview has been conducted, or a conditional offer of employment made, is the employer allowed to ask about an individual&#39;s conviction history (except as to matters that are off-limits) and unresolved arrests. Only those convictions and unresolved arrests that </span><i><span>directly relate</span></i><span> to the individual&#39;s ability to do the job may be considered in making an employment decision.</span></p>    <p><span>Before the employer may take an adverse action such as failing/refusing to hire, discharging, or not promoting an individual based on a conviction history or unresolved arrest, the employer must give the individual an opportunity to present evidence that the information is inaccurate, the individual has been rehabilitated, or other mitigating factors. The individual has seven days to respond, at which point the employer must delay any adverse action for a reasonable time and reconsider the adverse action. The employer must notify the individual of any final adverse action.</span></p>    <p><i><span>Evidence of rehabilitation</span></i><span> include satisfying parole/probation; receiving education/training; participating in alcohol/drug treatment programs; letters of recommendation; and age at which the individual was convicted. </span><i><span >Mitigating factors</span></i><span >include coercion, physical or emotional abuse, and untreated substance abuse/mental illness, that contributed to the conviction.</span></p>    <p><b><span >No Retaliation.</span></b><span > An employer may not take an adverse action against an applicant or employee for exercising their rights under the ordinance or cooperating with the Office of Labor Standards Enforcement OLSE.</span></p>    <p><span>If you need more information, or wish to report an employer that you believe has violated this ordinance, please contact the OLSE at 415-554-5192 or email </span><a href="mailto:FCE@sfgov.org"><span>FCE@sfgov.org</span></a><span >.</span><br/>    <b><span>OFFICE OF LABOR STANDARDS ENFORCEMENT</span></b><br/>    <b><span>City Hall, Room 430 1 Dr. Carlton B. Goodlett Place San Francisco CA 94102-4685 Tel. (415) 554-6235 Fax (415) 554-4791.</span></b></p>    <p><b><span> &#160;</span></b></p>    <p><b><u>SAN FRANCISCO, CALIFORNIA NOTICE IN SPANISH:</u></b></p>    <p><span><b>CIUDAD Y CONDADO DE SAN FRANCISCO EDWIN M. LEE, ALCALDE</b></span></p>    <h3><span>AVISO PARA LOS SOLICITANTES DE EMPLEO Y EMPLEADOS</span></h3>    <h4><span>Ordenanza de Oportunidades Equitativas de San Francisco Código de Policía, Artículo 49</span></h4>    <p><b><span>A partir del 13 de agosto de 2014, la Ordenanza de Oportunidades Equitativas (Código Policiaco de San Francisco, Artículo 49) requiere que los empleadores sigan reglas estrictas referentes al uso de los expedientes de arrestos y condenas al tomar decisiones de contratación y empleo.</span></b><span> La ordenanza cubre a los solicitantes de empleos y empleados que estarían o están realizando su trabajo, o una parte sustancial del mismo, en San Francisco y se aplica a los empleadores que tengan 20 o más empleados (sin importar la ubicación de los empleados).</span></p>    <p><b><span>Está prohibido tocar ciertos asuntos.</span></b><span> Un empleador nunca puede preguntar, requerir la divulgación de, o considerar: un arresto que no haya resultado en una condena (que no sea un arresto no resuelto que actualmente esté bajo investigación penal o juicio); participación en un programa de justicia alternativa o de fallo diferido; una condena que haya sido cancelada o declarada inoperante; cualquier determinación en el sistema de justicia juvenil; una condena de más de 7 años de antigüedad; y una infracción penal que no sea un delito mayor o delito menor. El empleador no puede utilizar los asuntos que están prohibidos para ningún propósito, en ninguna etapa del proceso de contratación.</span></p>    <p><b><span>Un empleador no puede preguntar sobre el historial de condenas o de arrestos no resueltos de una persona al inicio del proceso de contratación.</span></b><span> Esto incluye preguntar mediante un formulario de solicitud de empleo, una conversación informal o de otra forma.</span></p>    <p><b><span>Un proceso interactivo obligatorio para asuntos que no estén prohibidos.</span></b><span> Sólo después de que se haya hecho una entrevista en persona, o se haya hecho una oferta condicional de empleo, el empleador tiene permitido hacer preguntas sobre el historial de condenas de una persona (excepto sobre asuntos que estén prohibidos) y arrestos no resueltos. Sólo se pueden tomar en cuenta las condenas y los arrestos no resueltos que directamente se relacionen con la capacidad de la persona para hacer el trabajo al tomar la decisión del empleo.</span></p>    <p><span>Antes de que el empleador pueda tomar una acción adversa como no contratar, negarse a contratar, despedir, o no dar un ascenso a una persona con base en su historial de condenas o arrestos no resueltos, debe darle a la persona una oportunidad para presentar evidencia de que la información no es precisa, que la persona está rehabilitada, y otros factores atenuantes. La persona tiene 7 días para responder, en cuyo momento, el empleador debe posponer cualquier acción adversa durante un tiempo razonable y reconsiderar la acción adversa. El empleador debe avisar al individuo sobre cualquier acción adversa final.</span></p>    <p><span>La evidencia de rehabilitación incluye una libertad probatoria/bajo palabra satisfactoria; recibir educación/capacitación; participación en programas de tratamiento contra alcohol/drogas; cartas de recomendación; y la edad a la que la persona recibió la condena. Los factores atenuantes incluyen el chantaje, el maltrato físico o emocional, y la enfermedad no tratada mental o de consumo de sustancias que hayan contribuido con la condena.</span></p>    <p><b><span>Sin represalias.</span></b><span> Un empleador no puede tomar una acción adversa contra un solicitante o empleado por ejercer sus derechos conforme a la ordenanza o por cooperar con la Oficina de Cumplimiento de los Estándares Laborales (Office of Labor Standards Enforcement, OLSE).</span></p>    <p><span>Si usted necesita más información, o si desea reportar a un empleador que usted crea que ha infringido esta ordenanza, por favor comuníquese con la OLSE al 415-554-5192 o por correo electrónico a </span><a href="mailto:FCE@sfgov.org"><span>FCE@sfgov.org</span></a><span>.</span><br/>    <b><span>OFFICE OF LABOR STANDARDS ENFORCEMENT</span></b><br/>    <b><span>City Hall, Room 430 1 Dr. Carlton B. Goodlett Place San Francisco CA 94102-4685 Tel. (415) 554-6235 Fax (415) 554-4791.</span></b></p>    <p><b><span> &#160;</span></b></p>    <p><b><u>SAN FRANCISCO, CALIFORNIA NOTICE IN TAGALOG:</u></b></p>    <p><b><span>LUNGSOD AT COUNTY NG SAN FRANCISCO EDWIN M. LEE, MAYOR</span></b></p>    <h3><span>PASABI SA MGA APLIKANTE NG TRABAHO AT MGA KAWANI</span></h3>    <h4><span>Ordinansa ng Makatarungang Pagkakataon ng San Francisco (San Francisco Fair Chance Ordinance) Police Code, Article 49</span></h4>    <p><b><span>Simula ng Agosto 13, 2014, ang Ordinansa ng Makatarungang Pagkakataon (Fair Chance Ordinance) (San Francisco Police Code, Article 49) ay nag-uutos sa mga may-ari ng negosyo na mahigpit na sundin ang mga alituntunin tungkol sa paggamit ng mga talaan sa pagdakip at paghatol ng pagkakasala sa mga desisyon sa pagtanggap ng kawani at pagtatrabaho.</span></b><span> Ang ordinansa ay sumasakop sa mga aplikante ng trabaho at mga kawani na magtatrabaho o nagtatrabaho sa kabuuan, o sa mahalagang bahagi, sa San Francisco at umiiral sa mga may-ari ng negosyo na may 20 o higit pang kawani (sa kabila ng mga lugar na kinaroroonan ng mga kawani).</span></p>    <p><b><span>Ang ilang mga bagay ay pinagbabawal.</span></b><span> Ang may-ari ng negosyo ay </span><i><span>hindi kailanman</span></i><span> maaaring magtanong, mangailangan ng pagbubunyag, o isaalang-alang ang tungkol sa: pagdakip na hindi nagresulta sa paghatol ng pagkakasala (maliban sa hindi pa nalulutas na pagdakip na sumasailalim pa ng kriminal na imbestigasyon o paglilitis); paglahok sa programa ng isang paglihis o pagliban ng paghatol; paghatol ng pagkakasala na binura o hindi ipinatupad; anumang pagpapasiya sa sistema ng katarungang pangkabataan; paghatol ng pagkakasala na mahigit sa 7 taon; at kriminal na pagkakasala maliban sa krimen/maliit na kasalanan. Ang mga bagay na pinagbabawal ay hindi maaaring gamitin ng employer para sa anumang dahilan at anumang bahagi ng proseso ng pagtanggap ng kawani.</span></p>    <p><b><span>Ang may-ari ng negosyo ay hindi maaaring magtanong sa indibiduwal tungkol sa kasaysayan ng paghatol ng pagkakasala o hindi pa nalulutas na mga pagdakip sa simula ng proseso ng pagtanggap ng kawani.</span></b><span> Kabilang dito ang paggamit sa pormularyo ng aplikasyon sa trabaho, hindi pormal na pakikipag-usap, o ng iba pang paraan.</span></p>    <p><b><span>Ang inuutos na interaktibong proseso para sa mga bagay na hindi pinagbabawal.</span></b><span> Pagkatapos lamang na magsagawa ng personal na panayam, o magbigay ng may-kondisyong alok ng pagtatrabaho, ang employer ay pinapahintulutang magtanong sa indibiduwal tungkol sa kasaysayan ng paghatol ng pagkakasala (maliban sa mga bagay na pinagbabawal) at hindi pa nalulutas na mga pagdakip. Iyon lamang mga paghatol ng pagkakasala at hindi pa nalulutas na mga pagdakip na </span><i><span>tuwirang may-kaugnayan</span></i><span> sa kakayahan ng indibiduwal na gawin ang trabaho ang maaaring isaalang-alang sa paggawa ng desisyon sa pagtatrabaho.</span></p>    <p><span>Bago maaaring gumawa ng kasalungat na aksiyon ang employer gaya ng pagbagsak/pagtangging tanggapin sa trabaho, pagpapaalis, o hindi pagtataas ng tungkulin ng indibiduwal batay sa kasaysayan ng paghatol ng pagkakasala o hindi pa nalulutas na pagdakip, ang employer ay dapat bigyan ng pagkakataon ang indibiduwal na magharap ng ebidensiya na ang impormasyon ay hindi wasto, na ang indibiduwal ay dumaan na sa rehabilitasyon, o iba pang nakakababang mga dahilan. Ang indibiduwal ay may pitong araw upang tumugon, na kung saan ang employer ay dapat ipagpaliban ang anumang kasalungat na aksiyon sa loob ng makatwirang panahon at muling isaalang-alang ang kasalungat na aksiyon. Ang employer ay dapat ipabatid sa indibiduwal ang anumang panghuling kasalungat na aksiyon.</span></p>    <p><span>Kabilang sa </span><i><span>ebidensiya ng rehabilitasyon</span></i><span> ay ang kasiya-siyang parol/pansamantalang pagpapalaya (probation); pagtanggap ng edukasyon/pagsasanay; paglahok sa mga programa ng paggamot ng alkohol/druga; mga sulat ng rekomendasyon; at edad nang nahatulan ang indibiduwal. Kabilang sa </span><i><span>nakakababang mga dahilan</span></i><span> ay pananakot, pisikal o emosyonal na pag-abuso, at hindi pa nagagamot na pag-abuso sa substansiya/sakit pangkaisipan, na naging dahilan sa paghatol ng pagkakasala.</span></p>    <p><b><span>Walang Pagganti. </span></b><span>Ang may-ari ng negosyo ay hindi maaaring gumawa ng kasalungat na aksiyon laban sa aplikante o kawani dahil sa pagganap ng kanilang mga karapatan sa ilalim ng ordinansa o pakikipag-tulungan sa Office of Labor Standards Enforcement (OLSE).</span></p>    <p><span>Kung kailangan pa ninyo ng higit na impormasyon, o nais mag-ulat ng employer na sa palagay ninyo ay lumabag sa ordinansang ito, mangyaring kontakin ang OLSE sa 415-554-5192 o email </span><a href="mailto:FCE@sfgov.org"><span>FCE@sfgov.org</span></a><span>.</span><br/>        <b><span>OFFICE OF LABOR STANDARDS ENFORCEMENT</span></b><br/>        <b><span>City Hall, Room 430 1 Dr. Carlton B. Goodlett Place San Francisco CA 94102-4685 Tel. (415) 554-6235 Fax (415) 554-4791.</span></b></p>    <p><b><u>SAN FRANCISCO, CALIFORNIA NOTICE IN CHINESE:</u></b></p>    <p><span class="cjk">三藩市縣<br/>市長李孟賢<br/><u>求職者和雇員通告</u><br/>三藩市公平機會條例<br/>《警察法規》第49條</span></p>    <p><span class="cjk">2014年8月13日起，《公平機會條例》（《三藩市員警法規》第49條》）要求雇主做出招聘和雇用決定時嚴格遵守使用被捕和犯罪記錄相關的規定。。</span><span class="cjk">本條例適用於將來或目前大部分時間在三藩市工作的求職者和雇員並適用於有20名或以上雇員的雇主（不考慮雇員的所在地）。</span></p>    <p><span class="cjk">某些事項受到禁止。</span><span class="cjk">雇主任何時候不得問及、要求披露或者考慮求職者或雇員相關的以下事項：（1）未導致定罪的逮捕（仍在進行刑事調查或審理的除外）；（2）參與判決程序轉移或延期；（3）被刪除或宣告無效的有罪判決；（4）青少年司法系統的決定；（5）7年前的有罪判決；以及（6）重罪/輕罪以外的犯罪行為。雇主在招聘過程開始時，不得問及個人的犯罪史或未定罪的逮捕。這包括透過職位申請表、非正式談話或其他方式的詢問。</span></p>    <p><span class="cjk">不受禁止事項在聘用過程中必須遵守的規定。。</span><span class="cjk">僅可在進行現場面試或者提供有條件雇用之後，才准許雇主問及個人的定罪史（受到禁止的事項除外）和未定罪的逮捕。做出雇用決定時僅可考慮與個人從事該工作的能力直接相關的有罪判決和未定罪的逮捕。</span></p>    <p><span class="cjk">雇主根據定罪史或未定罪的逮捕採取不/拒絕聘用、解雇或不晉升個人之前，雇主必須給予此人機會提交證據表明該資訊不準確、此人已改過自新或者其他減輕因素。此人有七天時間做出回應，在此期間雇主必須合理延遲時間並重新考慮該不聘佣決定。雇主必須通知此人任何最終的決定。</span></p>    <p><span class="cjk">改過自新的證據包括令人滿意的假釋/緩刑；接受教育/培訓；參加酒精/毒品治療項目；推薦信；以及個人被判有罪的年齡。減輕因素包括促成有罪判決的脅迫、身體或精神虐待以及未得到治療的藥物濫用/精神疾病。</span><span class="cjk">禁止報復。</span><span class="cjk"> 雇主不得因求職者或雇員行使條例規定的權利或者配合勞工標準執行辦公室（OLSE），而對求職者或雇員採取報復行動。</span></p>    <p><span class="cjk">如果您需要更多資訊或者想要舉報您認為違反本條例的雇主，請撥打415-554-5192或者發送電子郵件到FCE@sfgov.org聯繫OLSE。</span></p>    <p><span class="cjk">勞工標準執行辦公室</span></p>    <p><b><span>City Hall, Room 430 1 Dr. Carlton B.</span></b></p>    <p><b><span>Goodlett Place San Francisco CA 94102</span></b></p>    <p><b><span>4685 </span></b><span class="cjk">電話 (415) 554-6235 傳真 (415) 554-4791</span></p>    <p><span> &#160;</span></p>    <hr/>    <p><b><u>LOS ANGELES, CALIFORNIA NOTICE IN ENGLISH:</u></b></p>    <p><span>City of Los Angeles, California</span></p>    <p><span>Eric Garceti, Mayor</span></p>    <p><span>Notice to Applicants &#38; Employees</span></p>    <p><span>Fair Chance Initiative for Hiring Ordinance</span></p>    <p><span>These are your rights:</span></p>    <p><span>1.<span> &#160; &#160; &#160; &#160; </span></span><span>An Employer shall not inquire about or seek information about an Applicant&#39;s Criminal History until after a Conditional Offer of Employment has been made to the Applicant*.</span></p>    <p><span>a.<span> &#160; &#160; &#160; &#160; </span></span><span>This includes job solicitations and applications or during any conversations and interviews.</span></p>    <p><span>2.<span> &#160; &#160; &#160; &#160; </span></span><span>If an Employer decides to rescind an offer of employment based on information discovered during the criminal background check, the Employer is required to perform and Individualized Assessment.</span></p>    <p><span>a.<span> &#160; &#160; &#160; &#160; </span></span><span>Individualized Assessment – a written assessment that effectively links the specific aspects of the Applicant&#39;s Criminal History with risks inherent in the duties of the Employment position sought by the Applicant.</span></p>    <p><span>b.<span> &#160; &#160; &#160; &#160; </span></span><span>If the offer is rescinded, the Applicant must receive: Written notification, a copy of the Individualized Assessment, and copies of a ny documentation used in the Employer&#39;s decision.</span></p>    <p><span>3.<span> &#160; &#160; &#160; &#160; </span></span><span>The Applicant has the right to the Fair Chance Process.</span></p>    <p><span>a.<span> &#160; &#160; &#160; &#160; </span></span><span>The Applicant has the opportunity to provide information or documentation to an Employer regarding the accuracy of their Crimnal History or Criminal History Report. Such evidence of rehabilitation or other mitigating factors should be considered in the Employer&#39;s assessment.</span></p>    <p><span>b.<span> &#160; &#160; &#160; &#160; </span></span><span>The Employer is required to hold the job open for at least five (5) business days from the notification date of the proposed adverse action to allow an Applicant to submit such documentation. The Employer is required to review any documentation to reassess their decision.</span></p>    <p><span>For additional information or assistance, call:</span></p>    <p><span>City of Los Angeles</span><br/>    <span>Department of Public Works</span><br/>    <span>Office of Wage Standards</span><br/>    <span>1149 S. Broadway, Suite 300</span><br/>    <span>Los Angeles, CA 90015</span><br/>    <span>Phone: (844) WagesLA – Email: </span><a href="mailto:WagesLA@lacity.org"><span>WagesLA@lacity.org</span></a></p>    <p><span>*Note: Not all applicants are covered under the FCHIO. Please see the ordinance (LAMC 189.00) for more details.</span></p>    <p><span>Form FCIHO, Rev 08/18</span></p>    <p><b><u>LOS ANGELES, CALIFORNIA NOTICE IN SPANISH:</u></b></p>    <p><span>City of Los Angeles, California</span></p>    <p><span>Eric Garceti, Mayor</span></p>    <p><span>Aviso para Solicitantes y Empleados<br/> Ordenanza de la &#160;Iniciativa &#160;de Oportunidad Justa para la &#160;Contratacion</span></p>    <p><span>Estos son &#160;sus &#160;derechos:</span></p>    <p><span>1.<span > &#160; &#160; &#160; &#160;</span></span><span>Los Empleadores no pueden preguntar al solicitante sobre los &#160;antecedentes &#160;penales hasta &#160;después &#160;de que se le haya dado al Solicitante* una oferta condicional de empleo.</span></p>    <p><span>a.<span> &#160; &#160; &#160; &#160; </span></span><span>Esto &#160;incluye solicitaciones y solicitudes de empleo o durante cualquier tipo de conversaciones o entrvistas.</span></p>    <p><span>2.<span > &#160; &#160; &#160; &#160;</span></span><span>Si &#160;el Empleador decide &#160;recindir &#160;la oferta de empleo como resultado de la &#160;investigación &#160;de &#160;antecedentes, &#160;el Empleador está obligado a realizer una Evaluación &#160;Individualizada.</span></p>    <p><span>a.<span> &#160; &#160; &#160; &#160; </span></span><span>Evaluación &#160;Individualizada – un &#160;análisis &#160;por escrito de las funciones y responsabilidades del trabajo, los &#160;antecedentes &#160;penales del Solicitante y cualquier otro factores que pueden afectar a la &#160;decisión &#160;de contractacion.</span></p>    <p><span>b.<span> &#160; &#160; &#160; &#160; </span></span><span>Si &#160;se rescinde &#160;la oferta, el Solicitante debe recibir: un aviso por escrito, una copia de la &#160;Evalucion &#160;Individual, y copias de todos los documentos que el Empleador &#160;utilizó &#160;a llegar a la decision.</span></p>    <p><span>3.<span > &#160; &#160; &#160; &#160;</span></span><span>El &#160;solicitante tiene el derecho al proceso de la Oportunidad Justa.</span></p>    <p><span>a.<span> &#160; &#160; &#160; &#160; </span></span><span>El &#160;Solicitante tiene la oportunidad de proporcionar &#160;información &#160;o &#160;documentación &#160;a un Empleador con &#160;respecto &#160;a la &#160;exactitud &#160;de sus Antecedentes Penales. Dichos datos deben ser considerados en la &#160;evaluacioón &#160;del Empleador, como evidencia de &#160;rehabilitación &#160;u otros factores mitigadores.</span></p>    <p ><span>b.<span> &#160; &#160; &#160; &#160; </span></span><span>Se &#160;requiere &#160;que el Empleador mantenga el puesto abierto por lo menos cinco (5) &#160;días &#160;laborales de la fecha de &#160;notificación &#160;de la &#160;acción &#160;adversa propuesta para permitir que &#160;el Solicitante presente &#160;tal &#160;documentación. &#160;El Empleador &#160;está &#160;obligado &#160;revisar cualquier &#160;documentación &#160;para &#160;reevaluar &#160;su &#160;decisión.</span></p>    <p><span>Para &#160;más &#160;información &#160;o asistencia, puede llamar a:</span><br/>    <span>City of Los Angeles</span><br/>    <span>Department of Public Works</span><br/>    <span>Office of Wage Standards</span><br/>    <span>1149 S. Broadway, Suite 300</span><br/>    <span>Los Angeles, CA 90015</span><br/>    <span>Tel</span><span>é</span><span>fono: (844) WagesLA – Email: </span><a href="mailto:WagesLA@lacity.org"><span>WagesLA@lacity.org</span></a></p>    <p><span>*La nota: No todos los solicitantes/empleados est</span><span>á</span><span >n cubierto bajo el FCHIO. Consulte con le ordenanza (LAMC 189.00) para m</span><span>á</span><span>s detalles.</span></p>    <p><span>Form FCIHO, Rev 08/18</span></p>    <hr/>    <p><b><u>PHILADELPHIA, PENNSYLVANIA FAIR CHANCE HIRING LAW</u></b></p>    <p><span>Ensuring people with criminal records have a fair chance to work.</span><b><span> It is illegal in Philadelphia for employers* to ask about your criminal background during the job application process.</span></b></p>    <p><b><span>This means that:</span></b></p>    <p><span>Employers cannot ask about your criminal background on job applications or during any job interview.</span></p>    <p><span>Employers can run your criminal background check ONLY AFTER a conditional offer of employment is made (final hiring depends on the results of your background check).</span></p><ul>    <li>Criminal convictions can be considered ONLY if they occurred less than 7 years from when you apply (not counting time in incarceration).</li>    <li>Arrests that did not lead to conviction cannot be used in employment decisions.</li></ul>    <p><span>If your background check reveals a conviction, the employer must consider:</span></p><ul>    <li>The type of offense and the time that has passed since it occurred;</li>    <li>Its connection to the job you are applying for; and</li>    <li>Your job history, character references, and any evidence of rehabilitation.</li></ul>    <p><span>Employers can reject you based on your criminal record ONLY if you pose an unacceptable risk to the business or to other people.</span></p>    <p><span>If you are rejected, the employer must send the decision to you in writing with a copy of the background report used to make the decision.</span></p>    <ul><li>You have 10 days to give an explanation of your record, proof that it is wrong, or proof of rehabilitation.</li></ul>    <p><span>If you believe your employer has violated the law, you can file a complaint with the PCHR.</span></p>    <p><span>Philadelphia Commission on Human Relations</span><br/>    <span>601 Walnut Street, Suite 300 South</span><br/>    <span>Philadelphia,PA 19106</span><br/>    <span>(p) 215-686-4670 (f) 215-686-4684</span><br/>    <span>email: </span><a href="mailto:pchr@phila.gov"><span>pchr@phila.gov</span></a><br/>    <a href="http://www.phila.gov/humanrelations"><span>www.phila.gov/humanrelations</span></a></p>    <p><span>*Some employers are exempt</span></p></div>'
+                      authorizationStatement: '<form><input type=''checkbox'' readonly='''' ##ELECTRONIC_TYPE## style=''-fs-checkbox-style: check;'' id=''signatureTypeElectronic'' name=''signatureType'' value=''electronic''/><label for=''signatureTypeElectronic''>I acknowledge receipt of the Disclosure and certify that I have read and understand this document.</label></form>'
+                      language: en
+                      crStamp: '2020-01-04T16:39:12.000+00:00'
+                      modStamp: '2024-02-26T19:53:34.000+00:00'
+                      authorizationObject:
+                        sections:
+                        - selectionValue: 'true'
+                          body: I acknowledge receipt of the Disclosure and certify that I have read and understand this document.
+                After acknowledgement:
+                  value:
+                    caseDataId: 6243f41d-1eb7-4769-c3ff-cda6231dd10e
+                    alreadyAck: true
+        '403':
+          description: Forbidden
+        '404':
+          description: The case was not found.
+        '422':
+          description: The case does not have the disclosure-type requested as a requirement, or the request body has missing or invalid fields.
+        '500':
+          description: Internal Server Error
+  /invitation/candidate/create:
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Create candidate by proxy for invitation
+      description: 'Creates the candidate object in KarmaCheck on behalf of the candidate so that there can be pre-population of PII before the candidate accepts an invitation and enters the system.
+
+        The candidate will be directed to onboard the associated case via the one-time token link that will be provided by the API partner.
+
+
+        This API marks the candidate object as not secured in the KarmaCheck system, which results in the candidate being prompted to set a password when the onboarding of the case begins.
+
+        After this call is complete, the candidate will be associated with the specific `caseId` that was attached to the invitation. The `caseId` will be used for saving all further case data, such as authorizations and acknowledgements. This assumes that a candidate will need to sign up with KarmaCheck before being able to continue to accept the invitation.
+
+        '
+      operationId: post-invitation-candidate-create
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - caseInvitationId
+              - email
+              - password
+              properties:
+                caseInvitationId:
+                  type: string
+                email:
+                  type: string
+                  description: The candidate's email address.
+                password:
+                  type: string
+                  description: The password for the candidate's account. The supplied password must be at least eight characters long and must contain a lowercase letter, an uppercase letter, a number, and a special character.
+                givenName:
+                  type: string
+                middleName:
+                  type: string
+                familyName:
+                  type: string
+                dob:
+                  type: string
+                  description: The candidate's birthdate in the format *YYYY*-*MM*-*DD*.
+                  format: date
+                phone:
+                  type: string
+                govtId:
+                  type: string
+            examples:
+              Example 1:
+                value:
+                  caseInvitationId: e1f27fde-8ec3-4fa2-abfe-43b7c9f43084
+                  email: john.lee@example.com
+                  password: Password!1
+                  givenName: John
+                  middleName: Michael
+                  familyName: Lee
+                  dob: '1980-09-19'
+                  phone: 800-555-0142
+                  govtId: 111-11-1111
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  caseId:
+                    type: string
+                  candidateId:
+                    type: string
+              examples:
+                Example 1:
+                  value:
+                    caseId: af51d69f-996a-4891-a745-aadfcdec225a
+                    candidateId: 10f4deb6-fd4e-4907-a47e-355caf6e449d
+        '400':
+          description: An invalid `email`, `password`, or `dob` format was passed.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+        '404':
+          description: An invalid `caseInvitationId` was passed.
+        '422':
+          description: 'The candidate cannot be created due to one of the following:
+
+
+            - The invitation expired.
+
+            - The invitation was deleted.
+
+            - The invitation was completed.
+
+            - The invitation is already associated with another candidate.
+
+            - An account already exists for the candidate.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  caseId:
+                    type: string
+                  candidateId:
+                    type: string
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+  /testimony/create/case/id/{caseId}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The identifier of the case for which to create a testimony.
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Create testimony for case
+      description: 'Stores personally identifiable information (PII) on a candidate in KarmaCheck. Only one piece of PII can be included in a single piece of testimony.
+
+
+        Testimony is owned by the candidate, and can be attached to a case. When testimony is attached to a case, a separate case testimony record is created, which then becomes part of the case.'
+      operationId: post-testimony-create-case-id-caseId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Testimony'
+            examples:
+              Education testimony:
+                value:
+                  testimonyTypeId: 19edb27e-5bfd-4c0f-888a-a5130b2f5250
+                  details:
+                    institution: UCLA
+                    city: Los Angeles
+                    state: CA
+                    country: US
+                    educationType: College/University
+                    current: false
+                    degree: B.S.
+                    major: Nursing
+                    monthBegin: September
+                    yearBegin: '2015'
+                    monthEnd: May
+                    yearEnd: '2019'
+              Professional License and Certification testimony:
+                value:
+                  testimonyTypeId: testimony-type-cplc
+                  testimonySubType: 512d0d24-a4bd-4b1d-b6d1-182247a0f6ec
+                  details:
+                    cplcId: 512d0d24-a4bd-4b1d-b6d1-182247a0f6ec
+                    fields:
+                    - fieldId: certifyingBody
+                      value: AMTA
+                    - fieldId: licenseNumber
+                      value: M123456
+                    - fieldId: firstName
+                      value: John
+                    - fieldId: lastName
+                      value: Smith
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                properties:
+                  id:
+                    type: string
+                    description: The unique identifier of the testimony created.
+                    format: uuid
+              examples:
+                Example 1:
+                  value:
+                    id: e0c9c732-68ea-4f73-857d-d37f1c9e2028
+        '403':
+          description: Forbidden
+        '422':
+          description: The request data is invalid or incomplete.
+        '500':
+          description: Internal Server Error
+  /testimony/id/{testimonyId}/detach/case/id/{caseId}:
+    parameters:
+    - in: path
+      name: testimonyId
+      required: true
+      description: The ID of the testimony to remove from a case.
+      schema:
+        type: string
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The identifier of the case.
+    delete:
+      tags:
+      - Candidate onboarding
+      summary: Detach testimony from case
+      description: 'Removes previously attached testimony from a case.
+
+
+        If the testimony is not attached to the supplied case, then calling this endpoint generates an error with 404. If the case has finished onboarding, then this call will fail with 403.
+
+        If the testimony has not been attached to any other case, then detaching will result in deletion of the testimony from the system.'
+      operationId: delete-testimony-id-testimonyId-detach-case-id-caseId
+      parameters: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: 'Forbidden: Case has finished onboarding.'
+        '404':
+          description: 'Not Found: Testimony not attached to supplied case.'
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+  /candidate/invitation/token/{invitationToken}:
+    parameters:
+    - schema:
+        type: string
+        example: 84729060-f3f3-42fc-88fe-c5ac3da46d41
+      name: invitationToken
+      in: path
+      required: true
+      description: The token used for the invitation. This can be retrieved from [Get invitation for case ID](karma-api-openapi.yaml/paths/~1invitation~1case~1{caseId}/get).
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get candidate for invitation
+      description: Retrieves the candidate information associated with an invitation.
+      operationId: get-candidate-invitation-token-invitationToken
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - caseId
+                - candidateId
+                - legalStarted
+                properties:
+                  caseId:
+                    type: string
+                    description: The ID of the case associated with the candidate and invitation.
+                  candidateId:
+                    type: string
+                    description: The ID of the candidate associated with the invitation.
+                  legalStarted:
+                    type: boolean
+                    description: True if the candidate began authorization of legal checks (for example, acknowledged a disclosure); false otherwise.
+              examples:
+                Example 1:
+                  value:
+                    caseId: 6f84bc4b-9206-49e4-92b2-529c3d5990b3
+                    candidateId: 56730732-b977-4e1f-b6d4-ffd96c51ff5b
+                    legalStarted: false
+        '403':
+          description: Forbidden
+        '422':
+          description: 'The invitation is no longer valid due to one of the following:
+
+            - The invitation expired.
+
+            - The invitation was canceled and deleted.
+
+            - The invitation was completed. In other words, a candidate acknowledged the invitation and completed the onboarding process.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                Example 1:
+                  value: Token is not valid
+        '500':
+          description: 'An error occurred on KarmaCheck''s end.
+
+
+            **Known issue:** The API returns this error instead of a 4xx response when either of the following occurs:
+
+            - The invited candidate hasn''t initiated the onboarding process.
+
+            - The invitation token provided is invalid.'
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                Example 1:
+                  value: Server Error
+  /candidate/countries:
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get countries
+      description: Fetches the list of countries and their respective ISO 3166 codes to use for creating testimony with proper codes.
+      operationId: get-candidate-countries
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - list
+                properties:
+                  list:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - iso31662
+                      - iso31663
+                      - country
+                      properties:
+                        iso31662:
+                          type: string
+                          description: The two-character ISO-3166 code for the country.
+                        iso31663:
+                          type: string
+                          description: The three-character ISO-3166 code for the country.
+                        country:
+                          type: string
+                          description: The name of the country.
+              examples:
+                Example 1:
+                  value:
+                    list:
+                    - iso31662: US
+                      iso31663: USA
+                      country: United States
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+  /invitation/case/{caseId}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The ID of the case that the invitation is attached to.
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get invitation for case ID
+      description: Retrieves the invitation associated with a case.
+      operationId: get-invitation-case-caseId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invitation:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: The unique identifier of the case invitation.
+                      email:
+                        type: string
+                      givenName:
+                        type: string
+                      familyName:
+                        type: string
+                      dob:
+                        type: string
+                        format: date
+                      invitationToken:
+                        type: string
+                      invitationStatusId:
+                        $ref: '#/components/schemas/InvitationStatusID'
+                      packageId:
+                        type: string
+                      expiresStamp:
+                        type: string
+                        format: date-time
+                        example: '2024-08-20T07:00:00.000+00:00'
+                      deletedStamp:
+                        type: string
+                        format: date-time
+                        example: '2024-08-14T14:17:01.000+00:00'
+                      completedStamp:
+                        type: string
+                        format: date-time
+                        example: '2024-08-14T14:17:01.000+00:00'
+                      crStamp:
+                        type: string
+                        format: date-time
+                        example: '2024-08-14T14:17:00.000+00:00'
+                      modStamp:
+                        type: string
+                        format: date-time
+                        example: '2024-08-14T14:17:01.000+00:00'
+              examples:
+                Example 1:
+                  value:
+                    invitation:
+                      id: 03c8ee25-0d4c-4a45-8030-456ef96e6513
+                      email: jackwilliams@example.com
+                      invitationToken: 1238ee25-4a51-ab7f-8030-456dd96d4321
+                      invitationStatusId: d1962405-dd97-48f2-bede-530c2895481f
+                      packageId: 7e32983c-1ea5-4271-9832-231a51c740be
+                      givenName: Jack
+                      familyName: Williams
+                      expiresStamp: '2022-04-28T06:59:59.000+00:00'
+                      crStamp: '2022-04-13T15:26:10.000+00:00'
+                      completedStamp: '2022-04-13T15:45:24.000+00:00'
+                      modStamp: '2022-07-01T13:11:02.000+00:00'
+        '403':
+          description: Forbidden
+        '404':
+          description: No invitation exists for the given `caseId`.
+          content: {}
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+  /case/id/{caseId}/legal/status/{legalType}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The ID of the case for which to retrieve a legal acknowledgement status.
+    - schema:
+        type: string
+        enum:
+        - esig
+        - fcra
+        - disclosure
+        - customdisclosure
+        - customdynamicdisclosure
+        - canadadisclosure
+        - intldisclosure
+        - custom-ab-disclosure-1
+        - custom-ab-disclosure-2
+      name: legalType
+      in: path
+      required: true
+      description: A type of legal document. Each corresponds to a legal service that was ordered for the case.
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get legal acknowledgement status
+      description: Retrieves the candidate acknowledgment status of the specified legal document for the case. This can be used to determine whether the candidate can skip acknowledging that legal document if they leave and then continue their onboarding later or on another device, for example.
+      operationId: get-case-id-caseId-legal-status-legalType
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - alreadyAck
+                properties:
+                  alreadyAck:
+                    type: boolean
+                    description: True if the candidate already acknowledged the legal document; false otherwise.
+              examples:
+                Example 1:
+                  value:
+                    alreadyAck: true
+        '403':
+          description: Forbidden
+        '404':
+          description: The case specified was not found.
+        '422':
+          description: Invalid legal document type, or the case does not have the specified legal document type as a requirement.
+        '500':
+          description: Internal Server Error
+  /case/id/{caseId}/candidate/id/{candidateId}/url:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+    - name: candidateId
+      in: path
+      required: true
+      description: The ID of the candidate for the case.
+      schema:
+        type: string
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get one-time token link
+      description: 'Retrieves a one-time token (OTT) URL to give to a candidate so that they can complete onboarding for a case.
+
+        The returned URL contains a token, ensuring that the candidate secures their account before proceeding with onboarding.
+
+
+        This endpoint is typically called when a candidate has been newly integrated into KarmaCheck by a partner. This is so that testimony can be presented on behalf of the candidate for a case before onboarding begins. The URL is designed to ensure that the onboarding process includes a step where the candidate can secure their account before continuing.
+
+
+        **Note:** To properly redirect the candidate to the provided invitation context to commence their background check, append the full invitation link to the end of the returned OTT URL as a `redirect_url` query parameter. For example:
+
+        - `https://my.karmacheck.com/ott/{ott}?redirect_url=/invite/{invitationToken}`
+
+        - `https://my.karmacheck.com/ott/{ott}?redirect_url=https://my.karmacheck.com/invite/{invitationToken}`'
+      operationId: get-case-id-caseid-candidate-id-candidateId-url
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - ottUrl
+                properties:
+                  ottUrl:
+                    type: string
+                    description: The URL in the format `https://my{-env}.karmacheck.com/ott/{ott}`, with `{ott}` as the token.
+                    example: https://my.karmacheck.com/ott/a1bc234-56de-7891-234a-b5c6d7c8e901
+        '403':
+          description: 'Forbidden: No access to the candidate or the case.'
+        '422':
+          description: 'Unprocessable Entity: Candidate account is already secured, or bad credentials.'
+        '500':
+          description: Internal Server Error
+  /candidate/secureimage/id/{secureImageId}:
+    parameters:
+    - schema:
+        type: string
+      name: secureImageId
+      in: path
+      required: true
+      description: The identifier of a secure image.
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get secure image by ID
+      description: Retrieves a secure image by its identifier.
+      operationId: get-candidate-secureimage-id-secureImageId
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unable to download image.
+        '500':
+          description: Internal Server Error
+  /testimony/case/{caseId}:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The identifier of the case.
+    get:
+      tags:
+      - Candidate onboarding
+      summary: Get testimony for case
+      description: Retrieves the testimony attached to a case.
+      operationId: get-testimony-case-caseId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - testimony
+                properties:
+                  testimony:
+                    type: object
+                    description: Each testimony type has a key in this object whose value is an array of the related testimony. If no testimony is available for a particular testimony type, the array will be empty.
+                    required:
+                    - address
+                    - driversLicense
+                    - parentalConsent
+                    - education
+                    - employment
+                    - customProfessionalLicense
+                    properties:
+                      address:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TestimonyAddress'
+                      driversLicense:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TestimonyDriversLicense'
+                      parentalConsent:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TestimonyParentalConsent'
+                      education:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TestimonyEducation'
+                      employment:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TestimonyEmployment'
+                      customProfessionalLicense:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TestimonyCustomProfessionalLicense'
+              examples:
+                Example 1:
+                  value:
+                    testimony:
+                      address:
+                      - id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                        city: San Clemente
+                        state: CA
+                        country: US
+                        address: 2 Main Street
+                        address2: Unit 3
+                        postalCode: '92670'
+                        current: true
+                      driversLicense:
+                      - id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                        state: CA
+                        licenseNumber: D1234567
+                      parentalConsent: []
+                      education:
+                      - id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                        institution: San Diego University
+                        city: San Diego
+                        state: CA
+                        country: US
+                        educationType: College/University
+                        current: true
+                        degree: B.S.
+                        major: Biology
+                        monthBegin: September
+                        yearBegin: '2006'
+                        monthEnd: May
+                        yearEnd: '2010'
+                      employment:
+                      - id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                        employer: Example Employer
+                        city: San Clemente
+                        state: CA
+                        country: US
+                        current: true
+                        okToContact: true
+                        position: Nurse
+                        monthBegin: August
+                        yearBegin: '2010'
+                      customProfessionalLicense: []
+        '403':
+          description: 'Forbidden
+
+
+            This response likely indicates that you don''t have access to the case.'
+          content: {}
+        '404':
+          description: Invalid `caseId`.
+        '500':
+          description: Internal Server Error
+  /case/id/{caseId}/action/refreshinvite:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The ID of the case to refresh the invitation for.
+    put:
+      tags:
+      - Candidate onboarding
+      summary: Refresh invitation for case
+      description: 'Refreshes the expiration date for an existing invitation.
+
+
+        When an onboarding invitation is generated, the candidate has 14 days (the default expiration period) to begin and complete their onboarding, or else the link in their invitation email becomes invalid.
+
+
+        As long as the invitation is refreshed during the 14-day period, enough time will be added so that the candidate has 14 days to complete onboarding. For example, if only 1 day remains, 13 days will be added. If 12 days still remain, only 2 days will be added.
+
+
+        Note that for your cases that don''t rely on the candidate to onboard, such as those that use the customer PII entry feature, you''ll never need to call this API.'
+      operationId: put-case-id-caseId-action-refreshinvite
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '422':
+          description: The candidate already began or finished onboarding.
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+  /case/id/{caseId}/action/resendinvite:
+    parameters:
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The ID of the case to resend an invitation for.
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Resend case invitation
+      description: 'Resends the invitation email for a case. Note that a case can have only one active invitation at a time, and resending the invite actually creates and sends a new invitation with a new ID.
+
+
+        This means that the link in an old invitation email will stop working, so make sure to update any references to the old invitation in order to use the new one.'
+      operationId: post-case-id-caseId-action-resendinvite
+      parameters:
+      - schema:
+          type: string
+        name: caseId
+        in: path
+        required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Unauthorized Request
+        '422':
+          description: 'Could not resend the invitation. This can be due to one of the following:
+
+
+            - A data issue
+
+            - Existing invitation was already used to create a candidate'
+        '500':
+          description: Server Error
+  /candidate/id/{candidateId}/update/case/id/{caseId}:
+    parameters:
+    - schema:
+        type: string
+      name: candidateId
+      in: path
+      required: true
+      description: The identifier of a candidate.
+    - schema:
+        type: string
+      name: caseId
+      in: path
+      required: true
+      description: The identifier of a case associated with the candidate.
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Update candidate for case
+      description: Sets modifiable data for a candidate.
+      operationId: post-candidate-id-candidateId-update-case-id-caseId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Cannot be changed once PII is locked. Value provided cannot already be associated with another candidate.
+                  format: email
+                dob:
+                  type: string
+                  format: date
+                  description: Cannot be changed once PII is locked.
+                  example: '1987-01-30'
+                givenName:
+                  type: string
+                  description: Cannot be changed once PII is locked. Only letters, numbers, hyphens (-), apostrophes ('), commas (,), periods (.), and underscores (_) are allowed.
+                middleName:
+                  type:
+                  - string
+                  - 'null'
+                  description: Cannot be changed once PII is locked. Only letters, numbers, hyphens (-), apostrophes ('), commas (,), periods (.), and underscores (_) are allowed.
+                familyName:
+                  type: string
+                  description: Cannot be changed once PII is locked. Only letters, numbers, hyphens (-), apostrophes ('), commas (,), periods (.), and underscores (_) are allowed.
+                phone:
+                  type:
+                  - string
+                  - 'null'
+                  pattern: ^\+\d+$
+                  example: '+18005550164'
+                govtId:
+                  type:
+                  - string
+                  - 'null'
+                  description: Cannot be changed once PII is locked, but can still be set if the current value is `null`.
+            examples:
+              Before PII lock:
+                value:
+                  email: dwight@example.com
+                  dob: '1991-04-05'
+                  givenName: Dwight
+                  familyName: Miller
+                  middleName: James
+                  phone: '+18005550164'
+                  govtId: null
+              After PII lock:
+                value:
+                  phone: '+18005550164'
+                  govtId: 333-22-1111
+        description: 'All fields in the request are optional, so only those that are passed in will be set or updated. Any fields left out of the request will keep their existing values.
+
+
+          Some fields are nullable, so passing in an empty string or `null` will update the field to be an empty string or `null`.
+
+
+          Some fields cannot be an empty string or `null`, in which case passing in such values will cause the call to fail.
+
+
+          After a candidate''s first case begins processing, their personally indentifiable information (PII) will be locked, and only their `phone` can be updated. Their `govtId` can be set if it hasn''t been already, but cannot be updated. Call [Get candidate info for case](paths/~1candidate~1info~1case~1id~1{caseId}/get) to check whether a candidate has their PII locked.'
+      responses:
+        '200':
+          description: This response will be returned as long as at least one valid update is made. The invalid fields will simply be ignored.
+        '400':
+          description: 'This response will be returned if the request didn''t contain at least one valid update, such as by attempting to update only PII fields after PII has been locked. '
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+  /testimony/id/{testimonyId}/update/case/id/{caseId}:
+    parameters:
+    - in: path
+      name: testimonyId
+      required: true
+      description: The identifier of the testimony record to update.
+      schema:
+        type: string
+    - in: path
+      name: caseId
+      required: true
+      schema:
+        type: string
+      description: The identifier of the case that the testimony is attached to.
+    post:
+      tags:
+      - Candidate onboarding
+      summary: Update testimony for case
+      description: Updates testimony associated with a case.
+      operationId: post-testimony-id-testimonyId-update-case-id-caseId
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Testimony'
+            examples:
+              Example 1:
+                value:
+                  testimonyTypeId: 19edb27e-5bfd-4c0f-888a-a5130b2f5250
+                  details:
+                    institution: UCLA
+                    city: Los Angeles
+                    state: CA
+                    country: US
+                    educationType: College/University
+                    current: false
+                    degree: B.S.
+                    major: Nursing
+                    monthBegin: September
+                    yearBegin: '2015'
+                    monthEnd: May
+                    yearEnd: '2019'
+        description: To properly update an existing testimony record, the value for `testimonyTypeId` must be the same as the one used to [create the testimony](paths/~1testimony~1create~1case~1id~1{caseId}/post).
+      responses:
+        '200':
+          description: 'The call was successful, but note the following behavior:
+
+
+            - If the testimony is *not* attached to other cases, the record will be updated and the `testimonyId` returned will be the same as the `testimonyId` supplied.
+
+            - If the testimony *is* attached to other cases, the record will be detached from this case, unmodified. Then, a new testimony record will be created with the data in the request and attached to the case. The new record''s `testimonyId` will be in the response, and so it is the caller''s responsibility to save and use the new ID as needed. This is because a testimony record become read-only once it''s used in the processing of a case.'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                properties:
+                  id:
+                    type: string
+                    description: The identifier of the updated or newly created testimony record.
+                    format: uuid
+              examples:
+                Example 1:
+                  value:
+                    id: 83b7eaf3-0409-4863-9709-14e28ab9cfa7
+        '403':
+          description: The case has begun processing, so testimony can no longer be modified.
+        '404':
+          description: The `testimonyId` provided is not associated with the `caseId`.
+        '422':
+          description: 'The request data is invalid or incomplete.
+
+
+            **Known issue:** The API returns a 500 response instead of a 422 when this error occurs.'
+        '500':
+          description: Internal Server Error
+components:
+  schemas:
+    TestimonyEducationCreate:
+      title: TestimonyEducation
+      type: object
+      description: The testimony details when `testimonyTypeId` is `19edb27e-5bfd-4c0f-888a-a5130b2f5250`. **Note:** Multiple properties are currently optional, but are strongly recommended to be included in requests.
+      required:
+      - institution
+      - city
+      - state
+      - country
+      - current
+      - monthEnd
+      - yearEnd
+      properties:
+        institution:
+          type: string
+          description: The name of the institution where the candidate received their education.
+        city:
+          type: string
+          description: The city in which the institution is located. Recommended to be included in *all* requests.
+        state:
+          type: string
+          description: The two-letter state code. Recommended to be included in *all* requests.
+          example: NY
+        country:
+          type: string
+          description: The ISO 3166 (2 or 3 letter) code. Recommended to be included in *all* requests.
+          example: US
+        nameIfDifferent:
+          type: string
+          description: The candidate's name that's on record with the institution.
+        educationType:
+          example: College/University
+          description: The type of education, such as a college or university, a high school or equivalent (for example, GED), a technical or trade school, or other.
+          type: string
+        current:
+          type: boolean
+          default: false
+          description: If true, the candidate is currently enrolled at the institution. If false, the candidate is not currently enrolled. (Required true if `monthEnd` and `yearEnd` are not provided)
+        degree:
+          type: string
+          description: The educational degree.
+        major:
+          type: string
+          description: The candidate's field of study.
+        gpa:
+          type: string
+          description: The candidate's grade point average (GPA).
+        monthBegin:
+          type: string
+          description: The month in which the candidate began their education.
+        yearBegin:
+          type: string
+          description: The year in which the candidate began their education.
+        monthEnd:
+          type: string
+          description: The month in which the candidate completed their education. Not applicable if `current` is true. (Required if `current` is false or not provided)
+        yearEnd:
+          type: string
+          description: The year in which the candidate completed their education. Not applicable if `current` is true. (Required if `current` is false or not provided)
+        comments:
+          type: string
+        contact:
+          $ref: '#/components/schemas/TestimonyContact'
+          description: The institution's contact information.
+    TestimonyCustomProfessionalLicense:
+      title: TestimonyCustomProfessionalLicense
+      type: object
+      required:
+      - id
+      - caseDataIds
+      - cplcId
+      - cplcName
+      - fields
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier of the testimony record.
+          readOnly: true
+        caseDataIds:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        cplcId:
+          type: string
+        cplcName:
+          type: string
+          readOnly: true
+        fields:
+          type: array
+          items:
+            type: object
+            required:
+            - fieldId
+            - value
+            properties:
+              fieldId:
+                type: string
+              value:
+                type: string
+    InvitationStatusID:
+      title: InvitationStatusID
+      type: string
+      enum:
+      - 3f5e6898-6641-4685-8ee0-1363b7e10c98
+      - b5af27f7-8a03-4820-b2bd-82587dcacf5b
+      - d1962405-dd97-48f2-bede-530c2895481f
+      - 0f6acacc-71c4-43ec-80fa-941ff71c0c16
+      description: 'The status ID of a case invitation. See [Invitation status](docs/reference/invitation-status.md) for more details about each possible status.
+
+
+        - pending: 3f5e6898-6641-4685-8ee0-1363b7e10c98
+
+        - expired: b5af27f7-8a03-4820-b2bd-82587dcacf5b
+
+        - completed: d1962405-dd97-48f2-bede-530c2895481f
+
+        - cancelled: 0f6acacc-71c4-43ec-80fa-941ff71c0c16 '
+    LegalAcknowledgmentSignature:
+      title: LegalAcknowledgmentSignature
+      type: object
+      required:
+      - signatureType
+      - signature
+      properties:
+        signatureType:
+          type: string
+          enum:
+          - electronic
+          - manual
+        signature:
+          type: string
+          description: For candidates who onboarded using KarmaCheck's onboarding experience, the value that the candidate entered into the signature input field on the legal step. This might not be exactly the same as the name that the case was ordered under.
+    TestimonyEmploymentCreate:
+      title: TestimonyEmployment
+      type: object
+      description: The testimony details when `testimonyTypeId` is `aa99dc08-0238-4050-9176-bf322e077f71`. **Note:** Multiple properties are currently optional, but are strongly recommended to be included in requests.
+      required:
+      - employer
+      - city
+      - state
+      - country
+      - current
+      - position
+      - monthBegin
+      - yearBegin
+      - monthEnd
+      - yearEnd
+      properties:
+        employer:
+          type: string
+          description: The name of the candidate's current or former employer. Must be less than or equal to 100 characters.
+        city:
+          type: string
+          description: The city of employment. Recommended to be included in *all* requests.
+        state:
+          type: string
+          description: The two-letter state code. Recommended to be included in *all* requests.
+        country:
+          type: string
+          description: The ISO 3166 (2 or 3 letter) code. Recommended to be included in *all* requests.
+        nameIfDifferent:
+          type: string
+          description: The candidate's name that's on record with the employer.
+        current:
+          type: boolean
+          description: If true, the candidate is currently employed with the employer. If false, the candidate is no longer employed with the employer. Recommended to be included in *all* requests. (Required true if `monthEnd` and `yearEnd` are not provided)
+          default: false
+        okToContact:
+          type: boolean
+          description: If true, the employer can be contacted about the candidate. If false, the employer cannot be contacted. Recommended to be included in *all* requests.
+        position:
+          type: string
+          description: The candidate's position with the employer.
+        incomeAmount:
+          type: string
+          description: The amount earned.  Recommended to be included for Employment Income Verification.
+        incomeCurrency:
+          type: string
+          description: The currency of the income earned. This is applicable to Employment Income Verification.
+        incomeFrequency:
+          type: string
+          description: The frequency of the amount earned. Recommended to be included for Employment Income Verification.
+        monthBegin:
+          type: string
+          description: The month in which the candidate began their employment.
+        yearBegin:
+          type: string
+          description: The year in which the candidate began their employment.
+        monthEnd:
+          type: string
+          description: The month in which the candidate ended their employment. Not applicable if `current` is true. (Required if `current` is false or not provided)
+        yearEnd:
+          type: string
+          description: The year in which the candidate ended their employment. Not applicable if `current` is true. (Required if `current` is false or not provided)
+        additionalInfo:
+          type: string
+        contact:
+          $ref: '#/components/schemas/TestimonyContact'
+          description: The employer's contact information.
+        staffingAgency:
+          type: string
+          description: The Staffing Agency that the candidate is working for the employer through.(If applicable)
+          maxLength: 100
+    TestimonyType:
+      title: TestimonyType
+      type: string
+      enum:
+      - 19edb27e-5bfd-4c0f-888a-a5130b2f5250
+      - aa99dc08-0238-4050-9176-bf322e077f71
+      - 3d83f3a0-fb6c-4c5a-a4dc-4dbf6a663870
+      - 994bb728-f06d-4e4d-b689-f180adfb6ca5
+      - 4143f0d4-4e3d-4ff7-b40a-9a26b569cf32
+      - testimony-type-cplc
+      description: 'The ID of the type of candidate data provided as testimony.
+
+
+        - Education: `19edb27e-5bfd-4c0f-888a-a5130b2f5250`
+
+        - Employment: `aa99dc08-0238-4050-9176-bf322e077f71`
+
+        - Driver''s License: `3d83f3a0-fb6c-4c5a-a4dc-4dbf6a663870`
+
+        - Parental Consent: `994bb728-f06d-4e4d-b689-f180adfb6ca5`
+
+        - Address: `4143f0d4-4e3d-4ff7-b40a-9a26b569cf32`
+
+        - Professional License and Certification: `testimony-type-cplc`'
+    Testimony:
+      title: Testimony
+      type: object
+      required:
+      - testimonyTypeId
+      properties:
+        testimonyTypeId:
+          $ref: '#/components/schemas/TestimonyType'
+          type: string
+        testimonySubType:
+          type: string
+          description: Only required for Professional License and Certification testimony, for which you must provide the `cplcId` as the `testimonySubType`. For education testimony, this field must be provided as `no-testimony-to-verify` if the candidate has no education testimony to verify; this provides a form of candidate affirmation that they have no education history to verify. Simply leaving off any testimony records in such a scenario will require KarmaCheck Customer Success intervention and cause processing delays.
+        description:
+          type: string
+          description: A free-form description of the testimony. If not provided, one will be automatically generated based on the type and details of the testimony.
+        details:
+          description: Shape of payload must correspond to the `testimonyTypeId`.
+          oneOf:
+          - $ref: '#/components/schemas/TestimonyEducationCreate'
+          - $ref: '#/components/schemas/TestimonyEmploymentCreate'
+          - $ref: '#/components/schemas/TestimonyDriversLicense'
+          - $ref: '#/components/schemas/TestimonyParentalConsent'
+          - $ref: '#/components/schemas/TestimonyAddress'
+          - $ref: '#/components/schemas/TestimonyCustomProfessionalLicense'
+          type: object
+    TestimonyEmployment:
+      title: TestimonyEmployment
+      type: object
+      required:
+      - id
+      - employer
+      - city
+      - state
+      - country
+      - current
+      - position
+      - monthBegin
+      - yearBegin
+      - monthEnd
+      - yearEnd
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier of the testimony record.
+          readOnly: true
+        employer:
+          type: string
+          description: The name of the candidate's current or former employer. Must be less than or equal to 100 characters.
+        city:
+          type: string
+          description: The city of employment.
+        state:
+          type: string
+          description: The two-letter state code.
+        country:
+          type: string
+          description: The ISO 3166 (2 or 3 letter) code.
+        nameIfDifferent:
+          type: string
+          description: The candidate's name that's on record with the employer.
+        current:
+          type: boolean
+          default: false
+          description: True if the candidate is currently employed with the employer; false otherwise. (Required true if `monthEnd` and `yearEnd` are not provided)
+        okToContact:
+          type: boolean
+          description: True if the employer can be contacted about the candidate; false otherwise.
+        position:
+          type: string
+          description: The candidate's position with the employer.
+        incomeAmount:
+          type: string
+          description: The amount earned. This is applicable to Employment Income Verification.
+        incomeCurrency:
+          type: string
+          description: The currency of the income earned. This is applicable to Employment Income Verification.
+        incomeFrequency:
+          type: string
+          description: The frequency of the amount earned. This is applicable to Employment Income Verification.
+        monthBegin:
+          type: string
+          description: The month in which the candidate began their employment.
+        yearBegin:
+          type: string
+          description: The year in which the candidate began their employment.
+        monthEnd:
+          type: string
+          description: The month in which the candidate ended their employment. Not applicable if `current` is true. (Required if `current` is false or not provided)
+        yearEnd:
+          type: string
+          description: The year in which the candidate ended their employment. Not applicable if `current` is true. (Required if `current` is false or not provided)
+        additionalInfo:
+          type: string
+        contact:
+          $ref: '#/components/schemas/TestimonyContact'
+          description: The employer's contact information.
+        staffingAgency:
+          type: string
+          description: The Staffing Agency that the candidate is working for the employer through. (If applicable)
+          maxLength: 100
+    LegalAcknowledgmentDisclosure:
+      title: LegalAcknowledgmentDisclosure
+      type: object
+      properties:
+        sendReport:
+          type: boolean
+          description: If true, a report notification will be emailed to the candidate when the report is finished.
+          default: false
+        signature:
+          type: string
+          description: The name entered into the signature input field on the legal step during candidate onboarding. This value might not be exactly the same as the name that the case was ordered under.
+    LegalType:
+      title: LegalType
+      type: string
+      enum:
+      - general-all-disclosure
+      - general-ca-disclosure
+      - state-city-all-disclosure
+      - custom-ab-disclosure-1
+      - custom-ab-ca-disclosure-1
+      - custom-ab-disclosure-2
+      - custom-ab-ca-disclosure-2
+      - custom-dynamic-all-disclosure
+      - custom-dynamic-ca-disclosure
+      description: The type of legal disclosure.
+    LegalAcknowledgmentDisclosures:
+      title: LegalAcknowledgmentDisclosures
+      type: object
+      required:
+      - sendReport
+      - list
+      properties:
+        sendReport:
+          type: boolean
+          description: If true, a report notification will be emailed to the candidate when the report is finished.
+        list:
+          type: array
+          items:
+            type: object
+            required:
+            - legalType
+            properties:
+              legalType:
+                $ref: '#/components/schemas/LegalType'
+                description: The type of legal disclosure. This is the value returned after calling [Request location-specific disclosures](karma-api-openapi.yaml/paths/~1case~1id~1{caseId}~1{disclosureType}~1{language}/post).
+              signature:
+                type: string
+                description: The value that the candidate entered into the signature input field on the legal step. Required if `legalType` is `general-*` or `custom-*`; not required for other types of legal disclosures.
+    TestimonyDriversLicense:
+      title: TestimonyDriversLicense
+      type: object
+      required:
+      - id
+      - state
+      - licenseNumber
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier of the testimony record.
+          readOnly: true
+        country:
+          type: string
+        state:
+          type: string
+        licenseNumber:
+          type: string
+          description: Must be a valid [state driver's license format](https://ntsi.com/drivers-license-format/).
+        firstNameIfDifferent:
+          type: string
+        middleInitialIfDifferent:
+          type: string
+        lastNameIfDifferent:
+          type: string
+        source:
+          type: string
+          readOnly: true
+    TestimonyContact:
+      title: TestimonyContact
+      type: object
+      properties:
+        phone:
+          type: string
+        email:
+          type: string
+        website:
+          type: string
+    TestimonyAddress:
+      title: TestimonyAddress
+      type: object
+      required:
+      - id
+      - city
+      - state
+      - country
+      - address
+      - postalCode
+      - current
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier of the testimony record.
+          readOnly: true
+        city:
+          type: string
+          maxLength: 30
+        state:
+          type: string
+          description: For US, use 2-letter abbreviation
+        country:
+          type: string
+          description: ISO 3166 (2 or 3 letter) code
+        address:
+          type: string
+          maxLength: 60
+        address2:
+          type: string
+        postalCode:
+          type: string
+        current:
+          type: boolean
+        source:
+          type: string
+          example: certn
+          readOnly: true
+    TestimonyParentalConsent:
+      title: TestimonyParentalConsent
+      type: object
+      required:
+      - id
+      - parentGivenName
+      - parentFamilyName
+      - parentEmail
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier of the testimony record.
+          readOnly: true
+        parentGivenName:
+          type: string
+        parentFamilyName:
+          type: string
+        parentEmail:
+          type: string
+    TestimonyEducation:
+      title: TestimonyEducation
+      type: object
+      required:
+      - id
+      - institution
+      - city
+      - state
+      - country
+      - current
+      - monthEnd
+      - yearEnd
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier of the testimony record.
+          readOnly: true
+        institution:
+          type: string
+          description: The name of the institution where the candidate received their education.
+        city:
+          type: string
+          description: The city in which the institution is located.
+        state:
+          type: string
+          description: The two-letter state code.
+          example: NY
+        country:
+          type: string
+          description: The ISO 3166 (2 or 3 letter) code.
+          example: US
+        nameIfDifferent:
+          type: string
+          description: The candidate's name that's on record with the institution.
+        educationType:
+          example: College/University
+          description: The type of education, such as a college or university, a high school or equivalent (for example, GED), a technical or trade school, or other.
+          type: string
+        current:
+          type: boolean
+          default: false
+          description: True if the candidate is currently enrolled at the institution; false otherwise. (Required true if `monthEnd` and `yearEnd` are not provided)
+        degree:
+          type: string
+          description: The educational degree.
+        major:
+          type: string
+          description: The candidate's field of study.
+        gpa:
+          type: string
+          description: The candidate's grade point average (GPA).
+        monthBegin:
+          type: string
+          description: The month in which the candidate began their education.
+        yearBegin:
+          type: string
+          description: The year in which the candidate began their education.
+        monthEnd:
+          type: string
+          description: The month in which the candidate completed their education. Not applicable if `current` is true. (Required if `current` is false or not provided)
+        yearEnd:
+          type: string
+          description: The year in which the candidate completed their education. Not applicable if `current` is true. (Required if `current` is false or not provided)
+        comments:
+          type: string
+        contact:
+          $ref: '#/components/schemas/TestimonyContact'
+          description: The institution's contact information.
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+x-apievangelist-provenance:
+  assembled: '2026-08-23'
+  method: searched
+  note: Reassembled verbatim from the 69 per-operation OpenAPI 3.1.0 YAML documents KarmaCheck publishes inside the markdown twins of its public API reference (https://developer.karmacheck.com/api-reference/<op>.md). Each page embeds a complete, single-operation slice of KarmaCheck's own openapi.json; the 69 slices merged with ZERO conflicting definitions. No content was authored, inferred, or padded by API Evangelist. KarmaCheck's consolidated export at https://developer.karmacheck.com/background-check-api/api-reference/openapi.json is login-gated (HTTP 302 to /login), so this reassembly is the only machine-readable form of the contract reachable without credentials.
+  source_index: https://developer.karmacheck.com/sitemap.xml
+  slices_merged: 69
+  conflicts: 0

@@ -1,0 +1,135 @@
+openapi: 3.2.0
+info:
+  title: KarmaCheck Verification Book API
+  description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
+
+
+    - [API basics](docs/overview/apis/api-overview.md)
+
+    - [Authentication](docs/overview/apis/authentication.md)
+
+    - [Environments](docs/overview/apis/environments.md)
+
+    - [Status codes and errors](docs/overview/apis/errors.md)'
+  version: '1.0'
+  contact:
+    name: KarmaCheck
+    email: customersuccess@karmacheck.com
+servers:
+- description: Stage
+  url: https://api-stage.karmacheck.io
+- description: Prod
+  url: https://api.karmacheck.io
+security:
+- JWT: []
+tags:
+- name: Verification Book
+paths:
+  /vbook/search:
+    post:
+      tags:
+      - Verification Book
+      summary: Search Verification Book
+      description: 'Search for Verification Book entries. Results will be returned by matching against the name and aliases of book items. '
+      operationId: post-vbook-search
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - searchDetails
+              properties:
+                searchDetails:
+                  $ref: '#/components/schemas/SearchDetails'
+                  description: Details to perform the search with.
+                listMetadata:
+                  $ref: '#/components/schemas/ListMetadata'
+                  description: Data for how you want the results returned. Not providing this results in page = 0 and pageSize = 10.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listMetadata:
+                    type: object
+                    properties:
+                      page:
+                        type: number
+                        description: The provided page number.
+                      pageSize:
+                        type: number
+                        description: The provided page size.
+                      totalPages:
+                        type: number
+                        description: The total number of pages based on the number of results and the page size provided.
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PublicVerificationBookItem'
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+components:
+  schemas:
+    PublicVerificationBookItem:
+      title: PublicVerificationBookItem
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of the verification book item.
+        city:
+          type: string
+          description: City of the verification book item.
+        state:
+          type: string
+          description: State of the verification book item.
+        name:
+          type: string
+          description: Name of the verification book item.
+    SearchDetails:
+      title: searchDetails
+      type: object
+      required:
+      - vbookTypeId
+      properties:
+        vbookTypeId:
+          type: string
+          description: The type of vBook items you want returned. Currently only supports employment(vbt_employment) and education(vbt_education).
+        nameQuery:
+          type: string
+          description: 'The name in which you want to search for. Not providing this will return all vbookType items.
+
+            Must be valid JSON, for example if you want to search for a back slash (\) you must escape it as "\\".
+
+            '
+    ListMetadata:
+      title: ListMetadata
+      type: object
+      properties:
+        page:
+          type: number
+          description: The page to return
+        pageSize:
+          type: number
+          description: The size of each page
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+x-apievangelist-provenance:
+  assembled: '2026-08-23'
+  method: searched
+  note: Reassembled verbatim from the 69 per-operation OpenAPI 3.1.0 YAML documents KarmaCheck publishes inside the markdown twins of its public API reference (https://developer.karmacheck.com/api-reference/<op>.md). Each page embeds a complete, single-operation slice of KarmaCheck's own openapi.json; the 69 slices merged with ZERO conflicting definitions. No content was authored, inferred, or padded by API Evangelist. KarmaCheck's consolidated export at https://developer.karmacheck.com/background-check-api/api-reference/openapi.json is login-gated (HTTP 302 to /login), so this reassembly is the only machine-readable form of the contract reachable without credentials.
+  source_index: https://developer.karmacheck.com/sitemap.xml
+  slices_merged: 69
+  conflicts: 0

@@ -1,0 +1,565 @@
+openapi: 3.2.0
+info:
+  title: KarmaCheck Services API
+  description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
+
+
+    - [API basics](docs/overview/apis/api-overview.md)
+
+    - [Authentication](docs/overview/apis/authentication.md)
+
+    - [Environments](docs/overview/apis/environments.md)
+
+    - [Status codes and errors](docs/overview/apis/errors.md)'
+  version: '1.0'
+  contact:
+    name: KarmaCheck
+    email: customersuccess@karmacheck.com
+servers:
+- description: Stage
+  url: https://api-stage.karmacheck.io
+- description: Prod
+  url: https://api.karmacheck.io
+security:
+- JWT: []
+tags:
+- name: Services
+paths:
+  /service/cplc/list/all:
+    get:
+      tags:
+      - Services
+      summary: Get all CPLCs
+      description: Retrieves the list of all professional licenses and certifications, including ones that are disabled for verification.
+      operationId: get-service-cplc-list-filter
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - cplcList
+                properties:
+                  cplcList:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CPLC'
+              examples:
+                Example 1:
+                  value:
+                    cplcList:
+                    - id: f269f4d6-6ed7-4d1b-8ed5-230ccc88f41b
+                      name: BLS Certification
+                      category: Healthcare
+                      enabled: true
+                      crStamp: '2021-08-06T06:13:14.000Z'
+                      modStamp: '2021-08-06T06:13:14.000Z'
+                    - id: fabeb100-5417-400b-81b6-d2e7402d019c
+                      name: CST
+                      category: Healthcare
+                      enabled: true
+                      crStamp: '2021-08-05T21:38:17.000Z'
+                      modStamp: '2021-08-05T21:38:17.000Z'
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+  /service/cplc/id/{cplcId}:
+    parameters:
+    - schema:
+        type: string
+      name: cplcId
+      in: path
+      required: true
+      description: The [unique identifier](docs/reference/cplc.md) of a professional license or certification.
+    get:
+      tags:
+      - Services
+      summary: Get CPLC full definition
+      description: Returns an object describing a specific professional license or certification.
+      operationId: get-service-cplc-id-cplcId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CPLCDefinition'
+                x-examples:
+                  Example 1:
+                    id: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+                    name: CFP
+                    category: Finance
+                    enabled: true
+                    crStamp: '2021-08-05T18:01:34.000Z'
+                    modStamp: '2021-08-05T18:01:34.000Z'
+                    fields:
+                    - id: 413b926c-57f0-401a-9d9f-1af89f70607a
+                      fieldId: lastName
+                      cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+                      label: Last Name as on License
+                      required: true
+                      displayLabel: Last Name as on License
+                      crStamp: '2021-08-05T18:01:34.000Z'
+                      modStamp: '2021-08-05T18:01:34.000Z'
+                      ordinal: 6
+                    - id: 54cfa3aa-dd76-4627-8fa9-dcbea5fc5c37
+                      fieldId: middleInitial
+                      cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+                      label: Middle Initial as on License
+                      required: false
+                      displayLabel: Middle Initial as on License
+                      crStamp: '2021-08-05T18:01:34.000Z'
+                      modStamp: '2021-08-05T18:01:34.000Z'
+                      ordinal: 5
+                    - id: 74bfafba-972e-4a61-a308-7252eadd2e79
+                      fieldId: licenseNumber
+                      cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+                      label: 'License/Cert # or ID'
+                      required: true
+                      displayLabel: 'License/Cert # or ID'
+                      crStamp: '2021-08-05T18:01:34.000Z'
+                      modStamp: '2021-08-05T20:40:41.000Z'
+                      ordinal: 2
+                    - id: 7ea4e04d-a6e4-49d2-8c14-d08834279766
+                      fieldId: firstName
+                      cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+                      label: First Name as on License
+                      required: true
+                      displayLabel: First Name as on License
+                      crStamp: '2021-08-05T18:01:34.000Z'
+                      modStamp: '2021-08-05T18:01:34.000Z'
+                      ordinal: 4
+                    - id: ce1bc678-a5fa-47a9-bae8-b6310268e058
+                      fieldId: state
+                      cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+                      label: State Where Issued
+                      required: false
+                      displayLabel: State Where Issued
+                      crStamp: '2021-08-05T18:01:34.000Z'
+                      modStamp: '2021-08-12T18:22:49.000Z'
+                      ordinal: 1
+                    - id: cf71fbad-8025-498c-82fd-c0fd54fb5aea
+                      fieldId: additionalInfo
+                      cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+                      label: Other Info Provided
+                      required: false
+                      displayLabel: Other Info Provided
+                      crStamp: '2021-08-05T18:01:34.000Z'
+                      modStamp: '2021-08-10T06:06:30.000Z'
+                      ordinal: 9
+                    - id: e1460773-fac4-4df7-8ad5-994f2a54064e
+                      fieldId: issueDate
+                      cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+                      label: Issued/Completed Date
+                      required: false
+                      displayLabel: Issued/Completed Date
+                      crStamp: '2021-08-05T18:01:34.000Z'
+                      modStamp: '2021-08-05T18:01:34.000Z'
+                      ordinal: 7
+                    - id: e943f10d-1c2c-4f82-b1ea-1978b2f09063
+                      fieldId: expirationDate
+                      cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+                      label: Expiration/Renewal Date
+                      required: false
+                      displayLabel: Expiration/Renewal Date
+                      crStamp: '2021-08-05T18:01:34.000Z'
+                      modStamp: '2021-08-05T18:01:34.000Z'
+                      ordinal: 8
+                    - id: f1969299-906a-4942-8dac-d8cf1dc94290
+                      fieldId: certifyingBody
+                      cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+                      label: Certifying Body
+                      required: true
+                      displayLabel: Certifying Body
+                      crStamp: '2021-08-05T18:01:34.000Z'
+                      modStamp: '2021-08-05T20:40:42.000Z'
+                      ordinal: 0
+              examples: {}
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /service/cplc/case/id/{caseId}:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: caseId
+      in: path
+      required: true
+      description: The ID of the case for which to retrieve CPLC definitions.
+    get:
+      tags:
+      - Services
+      summary: Get CPLC full definitions for case
+      description: Retrieves a list of definitions for all the professional licenses and certifications that were provided to a case as testimony. This is used when rendering Professional License and Certification testimony by associating the testimony data with the definition.
+      operationId: get-service-cplc-case-id-caseId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                x-examples:
+                  example-1:
+                    cplcDefinitionsList:
+                    - id: string
+                      name: string
+                      category: string
+                      enabled: boolean
+                      cr_stamp: Date
+                      mod_stamp: Date
+                      fields:
+                      - id: string
+                        cplcId: string
+                        fieldId: string
+                        label: string
+                        displayLabel: string
+                        required: boolean
+                        Cr_stamp: Date
+                        mod_stamp: Date
+                required:
+                - cplcDefinitionsList
+                properties:
+                  cplcDefinitionsList:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CPLCDefinition'
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+  /service/cplc/list:
+    get:
+      tags:
+      - Services
+      summary: Get CPLCs
+      description: Retrieves the list of supported professional licenses and certifications that are enabled for verification.
+      operationId: get-service-cplc-list
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - cplcList
+                properties:
+                  cplcList:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CPLC'
+              examples:
+                Example 1:
+                  value:
+                    cplcList:
+                    - id: f269f4d6-6ed7-4d1b-8ed5-230ccc88f41b
+                      name: BLS Certification
+                      category: Healthcare
+                      enabled: true
+                      crStamp: '2021-08-06T06:13:14.000Z'
+                      modStamp: '2021-08-06T06:13:14.000Z'
+                    - id: fabeb100-5417-400b-81b6-d2e7402d019c
+                      name: CST
+                      category: Healthcare
+                      enabled: true
+                      crStamp: '2021-08-05T21:38:17.000Z'
+                      modStamp: '2021-08-05T21:38:17.000Z'
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+  /shipment/mask/list:
+    get:
+      tags:
+      - Services
+      summary: Get mask list
+      description: Retrieves a list of masks for the user to order new shipment.
+      operationId: get-shipment-mask-list
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        inStock:
+                          type: boolean
+                          description: True if the mask is available for shipment; false otherwise.
+                        name:
+                          type: string
+                          description: The mask name that's displayed to dashboard users.
+                        sku:
+                          type: string
+                          description: The unique identifier of the mask.
+              examples:
+                Success Example:
+                  value:
+                    list:
+                    - inStock: false
+                      name: 3M 1860 and 1860S
+                      sku: 3M 1860 and 1860S
+                    - inStock: true
+                      name: 3M 1870+
+                      sku: 3M 1870+
+                    - inStock: true
+                      name: 3M 8210
+                      sku: 3M 8210
+                    - inStock: false
+                      name: 3M 9205+
+                      sku: 3M 9205+
+                    - inStock: true
+                      name: BYD N95 (TC 84A-9221)
+                      sku: BYD N95 (TC 84A-9221)
+                    - inStock: true
+                      name: Halyard FLUIDSHIELD* (Small & Regular)
+                      sku: Halyard FLUIDSHIELD*
+                    - inStock: true
+                      name: Honeywell DC365 N95
+                      sku: Honeywell DC365 N95
+                    - inStock: true
+                      name: Honeywell DF300 N95
+                      sku: Honeywell DF300 N95
+                    - inStock: true
+                      name: Makrite 9500 N95 (NIOSH 84A-5411)
+                      sku: Makrite 9500 N95 (NIOSH 84A-5411)
+                    - inStock: true
+                      name: Prestige Ameritech ProGear
+                      sku: Prestige Ameritech ProGear
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+components:
+  schemas:
+    CPLCDefinition:
+      title: CPLCDefinition
+      type: object
+      examples:
+      - id: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+        name: CFP
+        category: Finance
+        enabled: true
+        crStamp: '2021-08-05T18:01:34.000Z'
+        modStamp: '2021-08-05T18:01:34.000Z'
+        fields:
+        - id: 413b926c-57f0-401a-9d9f-1af89f70607a
+          fieldId: lastName
+          cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+          label: Last Name as on License
+          required: true
+          displayLabel: Last Name as on License
+          crStamp: '2021-08-05T18:01:34.000Z'
+          modStamp: '2024-05-21T14:14:02.000Z'
+          ordinal: 6
+          placeholder: Doe
+        - id: 54cfa3aa-dd76-4627-8fa9-dcbea5fc5c37
+          fieldId: middleInitial
+          cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+          label: Middle Initial as on License
+          required: false
+          displayLabel: Middle Initial as on License
+          crStamp: '2021-08-05T18:01:34.000Z'
+          modStamp: '2024-05-21T14:14:02.000Z'
+          ordinal: 5
+          placeholder: B
+        - id: 74bfafba-972e-4a61-a308-7252eadd2e79
+          fieldId: licenseNumber
+          cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+          label: 'License/Cert # or ID'
+          required: true
+          displayLabel: 'License/Cert # or ID'
+          crStamp: '2021-08-05T18:01:34.000Z'
+          modStamp: '2024-05-21T14:14:02.000Z'
+          ordinal: 2
+          placeholder: 1234ABC-12
+        - id: 7ea4e04d-a6e4-49d2-8c14-d08834279766
+          fieldId: firstName
+          cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+          label: First Name as on License
+          required: true
+          displayLabel: First Name as on License
+          crStamp: '2021-08-05T18:01:34.000Z'
+          modStamp: '2024-05-21T14:14:02.000Z'
+          ordinal: 4
+          placeholder: Jane
+        - id: ce1bc678-a5fa-47a9-bae8-b6310268e058
+          fieldId: state
+          cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+          label: State Where Issued
+          required: false
+          displayLabel: State Where Issued
+          crStamp: '2021-08-05T18:01:34.000Z'
+          modStamp: '2024-05-21T14:14:02.000Z'
+          ordinal: 1
+          placeholder: CA
+        - id: cf71fbad-8025-498c-82fd-c0fd54fb5aea
+          fieldId: additionalInfo
+          cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+          label: Other Info Provided
+          required: false
+          displayLabel: Other Info Provided
+          crStamp: '2021-08-05T18:01:34.000Z'
+          modStamp: '2024-05-21T14:14:02.000Z'
+          ordinal: 9
+          placeholder: Any additional information
+        - id: e1460773-fac4-4df7-8ad5-994f2a54064e
+          fieldId: issueDate
+          cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+          label: Issued/Completed Date
+          required: false
+          displayLabel: Issued/Completed Date
+          crStamp: '2021-08-05T18:01:34.000Z'
+          modStamp: '2024-05-21T14:14:02.000Z'
+          ordinal: 7
+          placeholder: 01/01/2000
+        - id: e943f10d-1c2c-4f82-b1ea-1978b2f09063
+          fieldId: expirationDate
+          cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+          label: Expiration/Renewal Date
+          required: false
+          displayLabel: Expiration/Renewal Date
+          crStamp: '2021-08-05T18:01:34.000Z'
+          modStamp: '2024-05-21T14:14:02.000Z'
+          ordinal: 8
+          placeholder: 01/01/2030
+        - id: f1969299-906a-4942-8dac-d8cf1dc94290
+          fieldId: certifyingBody
+          cplcId: 041c0aa6-2d64-48d0-b672-83bfcd10d47f
+          label: Certifying Body
+          required: true
+          displayLabel: Certifying Body
+          crStamp: '2021-08-05T18:01:34.000Z'
+          modStamp: '2024-05-21T14:14:02.000Z'
+          ordinal: 0
+          placeholder: American Heart Association
+      properties:
+        id:
+          description: 'The [unique identifier](docs/reference/cplc.md) of a professional license or certification.
+
+            '
+          type: string
+        name:
+          description: The [name](docs/reference/cplc.md) of the professional license or certification.
+          type: string
+        category:
+          type: string
+          enum:
+          - Finance
+          - General
+          - Healthcare
+          - Other
+          description: The category that the professional license or certification falls under.
+        enabled:
+          type: boolean
+          description: True if verification of the professional license or certification is enabled in KarmaCheck; false otherwise.
+        crStamp:
+          type: string
+          format: date-time
+          example: '2021-08-06T02:08:35.000Z'
+        modStamp:
+          type: string
+          format: date-time
+          example: '2021-08-06T02:08:35.000Z'
+        fields:
+          type: array
+          description: Information about each field that's associated with the professional license or certification. Each field represents a specific piece of information, such as the issue date or completion date of the license or certification.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              fieldId:
+                type: string
+                description: The ID of a field.
+              cplcId:
+                type: string
+                description: The ID of the professional license or certification.
+              label:
+                type: string
+                description: The descriptive label for the field.
+              required:
+                type: boolean
+                description: True if information for the field needs to be provided; false otherwise.
+              displayLabel:
+                type: string
+              crStamp:
+                type: string
+                format: date-time
+                example: '2021-08-06T02:08:35.000Z'
+              modStamp:
+                type: string
+                format: date-time
+                example: '2024-05-21T14:14:02.000Z'
+              ordinal:
+                type: number
+              placeholder:
+                type: string
+    CPLC:
+      title: CPLC
+      type: object
+      required:
+      - id
+      - name
+      - category
+      - enabled
+      - crStamp
+      - modStamp
+      properties:
+        id:
+          description: 'The [unique identifier](docs/reference/cplc.md) of a professional license or certification.
+
+            '
+          type: string
+        name:
+          description: The [name](docs/reference/cplc.md) of the professional license or certification.
+          type: string
+        category:
+          type: string
+          enum:
+          - Finance
+          - General
+          - Healthcare
+          - Other
+          description: The category that the professional license or certification falls under.
+        enabled:
+          type: boolean
+          description: True if verification of the professional license or certification is enabled in KarmaCheck; false otherwise.
+        crStamp:
+          type: string
+          format: date-time
+          example: '2021-08-06T02:08:35.000Z'
+        modStamp:
+          type: string
+          format: date-time
+          example: '2021-08-06T02:08:35.000Z'
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+x-apievangelist-provenance:
+  assembled: '2026-08-23'
+  method: searched
+  note: Reassembled verbatim from the 69 per-operation OpenAPI 3.1.0 YAML documents KarmaCheck publishes inside the markdown twins of its public API reference (https://developer.karmacheck.com/api-reference/<op>.md). Each page embeds a complete, single-operation slice of KarmaCheck's own openapi.json; the 69 slices merged with ZERO conflicting definitions. No content was authored, inferred, or padded by API Evangelist. KarmaCheck's consolidated export at https://developer.karmacheck.com/background-check-api/api-reference/openapi.json is login-gated (HTTP 302 to /login), so this reassembly is the only machine-readable form of the contract reachable without credentials.
+  source_index: https://developer.karmacheck.com/sitemap.xml
+  slices_merged: 69
+  conflicts: 0

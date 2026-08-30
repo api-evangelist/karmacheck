@@ -1,0 +1,378 @@
+openapi: 3.2.0
+info:
+  title: KarmaCheck Packages API
+  description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
+
+
+    - [API basics](docs/overview/apis/api-overview.md)
+
+    - [Authentication](docs/overview/apis/authentication.md)
+
+    - [Environments](docs/overview/apis/environments.md)
+
+    - [Status codes and errors](docs/overview/apis/errors.md)'
+  version: '1.0'
+  contact:
+    name: KarmaCheck
+    email: customersuccess@karmacheck.com
+servers:
+- description: Stage
+  url: https://api-stage.karmacheck.io
+- description: Prod
+  url: https://api.karmacheck.io
+security:
+- JWT: []
+tags:
+- name: Packages
+paths:
+  /package/id/{packageId}/services:
+    parameters:
+    - schema:
+        type: string
+      name: packageId
+      in: path
+      required: true
+    get:
+      tags:
+      - Packages
+      summary: Get all enabled services for package
+      description: Retrieves a list of all enabled services for a package.
+      operationId: get-package-id-packageId-services
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceGroupServices'
+        '403':
+          description: This response indicates missing authorization, valid authorization but insufficient permissions, or that the package ID provided is not found.
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+  /package/min/list:
+    get:
+      tags:
+      - Packages
+      summary: Get package list
+      description: Retrieves a list of enabled packages for the user to order new reports/cases. This list includes the identifier and the name of each package, sorted alphabetically by name.
+      operationId: get-package-min-list
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  packages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                x-examples:
+                  example-1:
+                    packages:
+                    - id: string
+                      name: string
+              examples:
+                Example 1:
+                  value:
+                    packages:
+                    - id: e35fece1-1ea5-43fc-b023-231a5d23a08b
+                      name: Package A
+                    - id: 7d35473c-428f-4271-9832-7e9241c740be
+                      name: Package B
+                    - id: 6229c081-eaab-433e-8df9-22576b4de002
+                      name: Package C
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+  /package/min/id/{packageId}:
+    parameters:
+    - schema:
+        type: string
+      name: packageId
+      in: path
+      required: true
+    get:
+      tags:
+      - Packages
+      summary: Get package
+      description: Retrieves the identifier and the name of a specific package.
+      operationId: get-package-min-id-packageid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  packages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                x-examples:
+                  example-1:
+                    packages:
+                    - id: string
+                      name: string
+              examples:
+                Example 1:
+                  value:
+                    packages:
+                    - id: 7d35473c-428f-4271-9832-7e9241c740be
+                      name: Package B
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+  /package/id/{packageId}/services/{serviceType}:
+    parameters:
+    - schema:
+        type: string
+      name: packageId
+      in: path
+      required: true
+    - schema:
+        type: string
+        enum:
+        - idv
+        - legal
+        - payment
+        - screenings
+      name: serviceType
+      in: path
+      description: The type of services to retrieve in the response. If an undefined value is provided, only screenings are returned.
+      required: true
+    get:
+      tags:
+      - Packages
+      summary: Get services for package
+      description: 'Retrieves a list of enabled services for a package. The list includes services of only one of the following types:
+
+
+        - **`idv`:** Identity verification services in the package.
+
+        - **`legal`:** Legal checks in the package. Legal checks are the various required authorizations collected from a candidate when they authorize a background check (e-signature, FCRA, and disclosures).
+
+        - **`payment`:** Payment services in the package.
+
+        - **`screenings`:** Screenings in the package.'
+      operationId: get-package-id-packageId-services-serviceType
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceGroupServices'
+        '403':
+          description: This response indicates missing authorization, valid authorization but insufficient permissions, or that the package ID provided is not found.
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+components:
+  schemas:
+    ServiceSubCategory:
+      title: ServiceSubCategory
+      type: string
+      description: The subcategory that a service belongs to.
+      enum:
+      - Drug Screening
+      - TB
+      - Titer
+      - Vaccination
+      - Physical
+    ServiceTypeId:
+      title: ServiceTypeId
+      type: string
+      description: 'The unique ID of the service type. A service can be one of the following types: screening, legal, payment, identity, or shipment.'
+      enum:
+      - 30bc2c03-c8dd-409a-8da6-e0070ea6a681
+      - a3b74b1b-b665-40be-bad2-2a49c801cf3f
+      - service-type-payment
+      - service-type-idv
+      - service-type-shipment
+    ServiceCategoryId:
+      title: ServiceCategoryId
+      type: string
+      description: The unique ID of the service category.
+      enum:
+      - service-cat-payment
+      - service-cat-idv
+      - service-cat-criminal
+      - service-cat-mvr
+      - service-cat-verification
+      - service-cat-ohs
+      - service-cat-pro-lic
+    ServiceSubCategoryId:
+      title: ServiceSubCategoryId
+      type: string
+      description: The unique ID of the service subcategory.
+      enum:
+      - service-subcat-drug
+      - service-subcat-tb
+      - service-subcat-titer
+      - service-subcat-vacc
+      - service-subcat-physical
+    ServiceCategory:
+      title: ServiceCategory
+      type: string
+      description: The category that a service belongs to.
+      enum:
+      - Payment
+      - Identity Verification
+      - Criminal Check
+      - Motor Vehicle Record Check
+      - Verification
+      - Occupational Health Screening
+      - Professional License
+    ServiceGroupServices:
+      title: ServiceGroupServices
+      type: object
+      examples:
+      - serviceGroupServices:
+        - serviceGroupId: 8afb91ff-7958-4f42-90e1-9bfed7db9bbf
+          serviceGroupName: Basic Check 2023-04-13T20:51:49.938Z
+          serviceGroupPrice: 1337
+          serviceGroupDescription: Common services for a basic background check
+          serviceId: 03635d39-c9df-418f-948d-10d38a7e06db
+          serviceName: National Sex Offender Search Alt
+          serviceDescription: Search for candidate sex offender history
+          serviceTypeId: 30bc2c03-c8dd-409a-8da6-e0070ea6a681
+          serviceTypeName: Screening
+          serviceGroupEnabled: true
+          serviceEnabled: true
+          serviceAutoProcessEnabled: true
+          serviceTypeEnabled: true
+          serviceCategory: Criminal Check
+          serviceCategoryId: service-cat-criminal
+          conditional: false
+          defaultSelected: false
+          serviceGroupServicesId: d2ff35ec-4da4-4a82-bb72-80980fc658ff
+      required:
+      - serviceGroupServices
+      properties:
+        serviceGroupServices:
+          type: array
+          description: A list of services, each containing detailed information about a service.
+          items:
+            type: object
+            required:
+            - serviceGroupId
+            - serviceGroupName
+            - serviceGroupDescription
+            - serviceId
+            - serviceName
+            - serviceDescription
+            - serviceTypeId
+            - serviceTypeName
+            - serviceGroupEnabled
+            - serviceEnabled
+            - serviceAutoProcessEnabled
+            - serviceTypeEnabled
+            - conditional
+            - defaultSelected
+            - serviceGroupServicesId
+            properties:
+              serviceGroupId:
+                type: string
+              serviceGroupName:
+                type: string
+              serviceGroupPrice:
+                type: number
+                description: The price of the package in United States cents. This is the price that candidates will pay via Stripe during onboarding to begin their check. Customers can request that a price be set on a package to pass on some or all of the price of the check to the candidate.
+              serviceGroupDescription:
+                type: string
+              serviceId:
+                type: string
+                description: The unique ID of the service. See [Service](docs/reference/service.md) for a list of possible services.
+              serviceName:
+                type: string
+                description: The name of the service.
+              serviceDescription:
+                type: string
+              serviceTypeId:
+                $ref: '#/components/schemas/ServiceTypeId'
+              serviceTypeName:
+                $ref: '#/components/schemas/ServiceTypeName'
+              serviceSubTypeId:
+                type: string
+                enum:
+                - jurisdiction-nationwide
+                - jurisdiction-district
+                - jurisdiction-statewide
+                description: The ID of the subtype for the service. This is applicable only when `serviceId` is `ee774b82-a411-4e2b-a38f-c0641bd836e7` (Federal Criminal Search).
+              serviceSubTypeName:
+                type: string
+                enum:
+                - Nationwide
+                - District
+                - Statewide
+                description: The service subtype.
+              serviceGroupEnabled:
+                type: boolean
+              serviceEnabled:
+                type: boolean
+              serviceAutoProcessEnabled:
+                type: boolean
+                description: True if the service is available for a case that's ordered using the PII entry flow. False if the service is unavailable when using the PII entry flow.
+              serviceTypeEnabled:
+                type: boolean
+              serviceCategory:
+                $ref: '#/components/schemas/ServiceCategory'
+              serviceCategoryId:
+                $ref: '#/components/schemas/ServiceCategoryId'
+              serviceSubCategory:
+                $ref: '#/components/schemas/ServiceSubCategory'
+              serviceSubCategoryId:
+                $ref: '#/components/schemas/ServiceSubCategoryId'
+              conditional:
+                type: boolean
+                description: True if the service is available only when adding to an order; false otherwise. A conditional service indicates that another service needs to run before this service can run.
+              defaultSelected:
+                type: boolean
+                description: True if the service is selected by default when a dashboard user selects the package for a case; false otherwise.
+              serviceGroupServicesId:
+                type: string
+    ServiceTypeName:
+      title: ServiceTypeName
+      type: string
+      description: The type of service.
+      enum:
+      - Screening
+      - Legal
+      - Payment
+      - Identity
+      - Shipment
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+x-apievangelist-provenance:
+  assembled: '2026-08-23'
+  method: searched
+  note: Reassembled verbatim from the 69 per-operation OpenAPI 3.1.0 YAML documents KarmaCheck publishes inside the markdown twins of its public API reference (https://developer.karmacheck.com/api-reference/<op>.md). Each page embeds a complete, single-operation slice of KarmaCheck's own openapi.json; the 69 slices merged with ZERO conflicting definitions. No content was authored, inferred, or padded by API Evangelist. KarmaCheck's consolidated export at https://developer.karmacheck.com/background-check-api/api-reference/openapi.json is login-gated (HTTP 302 to /login), so this reassembly is the only machine-readable form of the contract reachable without credentials.
+  source_index: https://developer.karmacheck.com/sitemap.xml
+  slices_merged: 69
+  conflicts: 0

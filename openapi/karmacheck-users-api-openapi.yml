@@ -1,0 +1,251 @@
+openapi: 3.2.0
+info:
+  title: KarmaCheck Users API
+  description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
+
+
+    - [API basics](docs/overview/apis/api-overview.md)
+
+    - [Authentication](docs/overview/apis/authentication.md)
+
+    - [Environments](docs/overview/apis/environments.md)
+
+    - [Status codes and errors](docs/overview/apis/errors.md)'
+  version: '1.0'
+  contact:
+    name: KarmaCheck
+    email: customersuccess@karmacheck.com
+servers:
+- description: Stage
+  url: https://api-stage.karmacheck.io
+- description: Prod
+  url: https://api.karmacheck.io
+security:
+- JWT: []
+tags:
+- name: Users
+paths:
+  /company/user/list:
+    parameters:
+    - schema:
+        type: string
+      in: query
+      name: groupProfileId
+    get:
+      tags:
+      - Users
+      summary: Get users by group profile
+      description: 'Gets the users for every group within the company that the authenticated user belongs to.
+
+
+        If the `groupProfileId` query parameter is included, the endpoint retrieves users associated with only the specified group.'
+      operationId: get-company-user-list
+      parameters:
+      - schema:
+          type: string
+        in: query
+        name: groupProfileId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - users
+                properties:
+                  users:
+                    description: A list of users associated with the user's groups or specified group.
+                    oneOf:
+                    - items:
+                        $ref: '#/components/schemas/UserGetUserByGroup'
+                    - items:
+                        $ref: '#/components/schemas/UserGetUserByGroupInternal'
+                    type: array
+              examples:
+                Example 1:
+                  value:
+                    users:
+                    - id: f7bdbab9-fb9f-4c24-928d-91700030e5bc
+                      givenName: John
+                      familyName: Doe
+                      enabled: 0
+                    - id: f7bdbab9-fb9f-4c24-928d-91700030e5ab
+                      givenName: Jane
+                      familyName: Doe
+                      enabled: 1
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '422':
+          description: The user has access to the specified group, but the group profile ID is not associated with the user's company ID.
+        '500':
+          description: Internal Server Error
+      security:
+      - JWT: []
+components:
+  schemas:
+    UserGetUserByGroupInternal:
+      title: User (Internal)
+      type: object
+      description: This model represents a User entity that is returned by the Get Users By Group Profile API.
+      required:
+      - id
+      - givenName
+      - familyName
+      - enabled
+      properties:
+        id:
+          type: string
+        givenName:
+          type: string
+        familyName:
+          type: string
+        enabled:
+          type: integer
+          enum:
+          - 1
+          - 0
+          description: 'A boolean integer: 1 (true) if the user''s account is enabled in KarmaCheck; 0 (false) if the user account is disabled. By default, all users are returned. Control by passing `includeDisabled=true|false` as a query param.'
+        username:
+          type: string
+          format: email
+          description: Not returned by default. Control by passing `includeEmail=true|false` as a query param.
+        mfa:
+          type: object
+          description: Not returned by default. Control by passing `includeMfa=true|false` as a query param.
+          required:
+          - enrollments
+          properties:
+            enrollments:
+              type: array
+              items:
+                $ref: '#/components/schemas/MFAEnrollment'
+    UserGetUserByGroup:
+      title: User
+      type: object
+      description: This model represents a User entity that is returned by the Get Users By Group Profile API.
+      required:
+      - id
+      - givenName
+      - familyName
+      - enabled
+      properties:
+        id:
+          type: string
+        givenName:
+          type: string
+        familyName:
+          type: string
+        enabled:
+          type: integer
+          enum:
+          - 1
+          - 0
+          description: 'A boolean integer: 1 (true) if the user''s account is enabled in KarmaCheck; 0 (false) if the user account is disabled.'
+    MFAEnrollment:
+      type: object
+      examples:
+      - id: bded5fd7-7c33-4984-8edd-3fee6f3ef3f5
+        activatedStamp: '2025-12-16T19:23:55.000Z'
+        crStamp: '2025-12-16T19:23:16.000Z'
+        label: 1Password (Work Mac)
+        lastUsedStamp: '2025-12-16T19:23:55.000Z'
+        lastVerifiedStamp: '2025-12-16T19:23:55.000Z'
+        method: totp
+        modStamp: '2025-12-16T19:24:10.000Z'
+        status: revoked
+        revokedBy:
+          id: 3bedd2fc-3c87-495a-a3f8-a30daa73004c
+          username: me@example.com
+          revokedStamp: '2025-12-16T19:24:10.000Z'
+      title: MFA Enrollment
+      required:
+      - id
+      - crStamp
+      - modStamp
+      - label
+      - method
+      - status
+      properties:
+        id:
+          type: string
+          description: A unique ID associated with the MFA enrollment.
+        crStamp:
+          type: string
+          format: date-time
+          description: The UTC timestamp when the MFA enrollment was created.
+          example: '2025-11-05T18:35:34.431Z'
+        modStamp:
+          type: string
+          format: date-time
+          description: The UTC timestamp when the MFA enrollment was last modified.
+          example: '2025-11-05T18:35:34.431Z'
+        activatedStamp:
+          type: string
+          format: date-time
+          description: The UTC timestamp when the MFA enrollment was activated.
+          example: '2025-11-05T18:35:34.431Z'
+        lastUsedStamp:
+          type: string
+          description: The UTC timestamp when the MFA enrollment was last used for a verification attempt.
+          example: '2025-11-05T18:35:34.431Z'
+          format: date-time
+        lastVerifiedStamp:
+          type: string
+          format: date-time
+          description: The UTC timestamp when a challenge against this MFA enrollment was last verified.
+          example: '2025-11-05T18:35:34.431Z'
+        label:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: The human-friendly label associated with the MFA enrollment.
+          example: 1Password (Work Mac)
+          default: Device
+        method:
+          enum:
+          - totp
+          description: The MFA enrollment method, such as time-based one-time password.
+        status:
+          enum:
+          - active
+          - revoked
+          - pending
+          description: The current status of the MFA enrollment.
+        revokedBy:
+          type: object
+          description: Details about the MFA enrollment's revocation, if its status is "revoked".
+          required:
+          - id
+          - username
+          - revokedStamp
+          properties:
+            id:
+              type:
+              - string
+              - 'null'
+              description: The ID of the user that revoked the MFA enrollment.
+            username:
+              type:
+              - string
+              - 'null'
+              description: The username of the user that revoked the MFA enrollment.
+            revokedStamp:
+              type: string
+              format: date-time
+              example: '2025-11-05T18:35:34.431Z'
+              description: The UTC timestamp when the MFA enrollment was revoked.
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+x-apievangelist-provenance:
+  assembled: '2026-08-23'
+  method: searched
+  note: Reassembled verbatim from the 69 per-operation OpenAPI 3.1.0 YAML documents KarmaCheck publishes inside the markdown twins of its public API reference (https://developer.karmacheck.com/api-reference/<op>.md). Each page embeds a complete, single-operation slice of KarmaCheck's own openapi.json; the 69 slices merged with ZERO conflicting definitions. No content was authored, inferred, or padded by API Evangelist. KarmaCheck's consolidated export at https://developer.karmacheck.com/background-check-api/api-reference/openapi.json is login-gated (HTTP 302 to /login), so this reassembly is the only machine-readable form of the contract reachable without credentials.
+  source_index: https://developer.karmacheck.com/sitemap.xml
+  slices_merged: 69
+  conflicts: 0

@@ -1,0 +1,112 @@
+openapi: 3.2.0
+info:
+  title: KarmaCheck Authentication API
+  description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
+
+
+    - [API basics](docs/overview/apis/api-overview.md)
+
+    - [Authentication](docs/overview/apis/authentication.md)
+
+    - [Environments](docs/overview/apis/environments.md)
+
+    - [Status codes and errors](docs/overview/apis/errors.md)'
+  version: '1.0'
+  contact:
+    name: KarmaCheck
+    email: customersuccess@karmacheck.com
+servers:
+- description: Stage
+  url: https://api-stage.karmacheck.io
+- description: Prod
+  url: https://api.karmacheck.io
+security:
+- JWT: []
+tags:
+- name: Authentication
+paths:
+  /auth/api:
+    post:
+      tags:
+      - Authentication
+      summary: Authenticate API client
+      description: Authenticates an API client with KarmaCheck so that they can access the KarmaCheck system.
+      operationId: post-auth-api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  apiKey: 03c703eb-56cc-46f6-bb63-afb3e302d1bf
+                  clientAccessToken: ffb3c8ee-412d-43e5-975a-355e3cc54cf9
+              required:
+              - apiKey
+              - clientAccessToken
+              properties:
+                apiKey:
+                  type: string
+                  description: A unique key that identifies the partner in the KarmaCheck system. If you are building an API integration with KarmaCheck, contact your Account Manager for an `apiKey`. Whether you are creating an integration for your own company's use, for ordering checks on behalf of mutual customers of yourself and KarmaCheck, or for both, you will receive one `apiKey`.
+                clientAccessToken:
+                  type: string
+                  description: 'A secret that grants an API partner access to a specific group of a company. The combination of an `apiKey` and a `clientAccessToken` generates a `token` for that group. If you''re building an integration to order checks for:
+
+                    - **Your own company:** Contact your Account Manager to get a `clientAccessToken` for each group you wish to order checks for over the API.
+
+                    - **A mutual customer:** Contact that mutual customer for them to give you `clientAccessToken`s associated with your `apiKey`.'
+            examples:
+              Example:
+                value:
+                  apiKey: 03c703eb-56cc-46f6-bb63-afb3e302d1bf
+                  clientAccessToken: ffb3c8ee-412d-43e5-975a-355e3cc54cf9
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Authentication'
+              examples: {}
+        '403':
+          description: Forbidden
+      security: []
+components:
+  schemas:
+    Authentication:
+      title: Authentication
+      type: object
+      examples:
+      - id: 7a9af724-a459-49e5-af08-91fc50373818
+        username: f08f1be0-9059-467e-a59e-b3721f434375@api.example.com
+        token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmMDhmMWJlMC05MDU5LTQ2N2UtYTU5ZS1iMzcyMWY0MzQzNzVAYXBpLmthcm1hY2hlY2suY29tIiwianRpIjoiN2E5YWY3MjQtYTQ1OS00OWU1LWFmMDgtOTFmYzUwMzczODE4IiwiZ3JvdXBQcm9maWxlSWQiOiI1NTM4MmJmNC02Nzc0LTQ3OGItYmYzMC1kZDI0NWJmZWIwM2MiLCJjb21wYW55SWQiOiJkZGNkY2MzMC1lYTVhLTRiZTktODExOS03OTljZTQzZDk1MWQiLCJncm91cE5hbWUiOiJLYXJtYUNoZWNrIiwiY29tcGFueU5hbWUiOiJLYXJtYUNoZWNrIiwiaXNJbnRlcm5hbCI6MSwiaXNBZG1pbiI6MSwiaWF0IjoxNzAzOTgzNTcyfQ.TvaSgnm0W4XWqYSY1rep4cjPMN2DEDOMIjpKOQMq0zc
+        groupProfileId: pe0286f4-ac27-4e36-bfb20-06ae7e392fd2
+      required:
+      - id
+      - username
+      - token
+      - groupProfileId
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the client. This is the same as the JWT ID (`jti` property) of the token.
+        username:
+          type: string
+          description: The KarmaCheck username of the client. When this endpoint is first called for a particular combination of an `apiKey` and a `clientAccessToken`, a client user is created in the KarmaCheck system whose permissions are scoped to the corresponding group. A randomized `username` with `api` in the name is generated to make it clear that actions were taken by an API client instead of a user of the enterprise dashboard.
+        token:
+          type: string
+          description: A [JSON Web Token](https://jwt.io/) (JWT) that can be used to perform actions like ordering checks and getting results for a group of a company. Does not expire, but can be revoked upon request or at KarmaCheck's discretion.
+        groupProfileId:
+          type: string
+          description: The ID of the group of the company that the `token` can access.
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+x-apievangelist-provenance:
+  assembled: '2026-08-23'
+  method: searched
+  note: Reassembled verbatim from the 69 per-operation OpenAPI 3.1.0 YAML documents KarmaCheck publishes inside the markdown twins of its public API reference (https://developer.karmacheck.com/api-reference/<op>.md). Each page embeds a complete, single-operation slice of KarmaCheck's own openapi.json; the 69 slices merged with ZERO conflicting definitions. No content was authored, inferred, or padded by API Evangelist. KarmaCheck's consolidated export at https://developer.karmacheck.com/background-check-api/api-reference/openapi.json is login-gated (HTTP 302 to /login), so this reassembly is the only machine-readable form of the contract reachable without credentials.
+  source_index: https://developer.karmacheck.com/sitemap.xml
+  slices_merged: 69
+  conflicts: 0
