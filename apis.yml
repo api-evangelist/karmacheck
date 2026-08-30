@@ -125,6 +125,8 @@ apis:
   humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
   baseURL: https://api.karmacheck.io
   tags:
+  - Secure Documents
+  tags_raw:
   - Secure documents
   properties:
   - type: OpenAPI
@@ -153,6 +155,8 @@ apis:
   humanURL: https://developer.karmacheck.com/background-check-api/overview/introduction
   baseURL: https://api.karmacheck.io
   tags:
+  - User
+  tags_raw:
   - Users
   properties:
   - type: OpenAPI
