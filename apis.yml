@@ -24,6 +24,21 @@ deliveryModel:
   - pricing
   generated: '2026-08-28'
   method: derived
+accessModel:
+  pricing: unknown
+  onboarding: unknown
+  trial: false
+  try_now: false
+  public: false
+  label: Unknown
+  confidence: low
+  source:
+  - authentication
+  - rate-limits
+  - security
+  - sandbox
+  generated: '2026-09-03'
+  method: derived
 image: https://cdn.prod.website-files.com/673634b37e2e1340c1ee5f3d/6736aa68f0e954a84817b9c0_Favicon-Icon.png
 url: https://raw.githubusercontent.com/api-evangelist/karmacheck/refs/heads/main/apis.yml
 x-type: company
