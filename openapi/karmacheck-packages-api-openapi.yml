@@ -4,13 +4,13 @@ info:
   description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
 
 
-    - [API basics](docs/overview/apis/api-overview.md)
+    - API basics
 
-    - [Authentication](docs/overview/apis/authentication.md)
+    - Authentication
 
-    - [Environments](docs/overview/apis/environments.md)
+    - Environments
 
-    - [Status codes and errors](docs/overview/apis/errors.md)'
+    - Status codes and errors'
   version: '1.0'
   contact:
     name: KarmaCheck
@@ -193,16 +193,28 @@ paths:
       - JWT: []
 components:
   schemas:
-    ServiceSubCategory:
-      title: ServiceSubCategory
+    ServiceTypeName:
+      title: ServiceTypeName
       type: string
-      description: The subcategory that a service belongs to.
+      description: The type of service.
       enum:
-      - Drug Screening
-      - TB
-      - Titer
-      - Vaccination
-      - Physical
+      - Screening
+      - Legal
+      - Payment
+      - Identity
+      - Shipment
+    ServiceCategory:
+      title: ServiceCategory
+      type: string
+      description: The category that a service belongs to.
+      enum:
+      - Payment
+      - Identity Verification
+      - Criminal Check
+      - Motor Vehicle Record Check
+      - Verification
+      - Occupational Health Screening
+      - Professional License
     ServiceTypeId:
       title: ServiceTypeId
       type: string
@@ -235,18 +247,6 @@ components:
       - service-subcat-titer
       - service-subcat-vacc
       - service-subcat-physical
-    ServiceCategory:
-      title: ServiceCategory
-      type: string
-      description: The category that a service belongs to.
-      enum:
-      - Payment
-      - Identity Verification
-      - Criminal Check
-      - Motor Vehicle Record Check
-      - Verification
-      - Occupational Health Screening
-      - Professional License
     ServiceGroupServices:
       title: ServiceGroupServices
       type: object
@@ -355,16 +355,16 @@ components:
                 description: True if the service is selected by default when a dashboard user selects the package for a case; false otherwise.
               serviceGroupServicesId:
                 type: string
-    ServiceTypeName:
-      title: ServiceTypeName
+    ServiceSubCategory:
+      title: ServiceSubCategory
       type: string
-      description: The type of service.
+      description: The subcategory that a service belongs to.
       enum:
-      - Screening
-      - Legal
-      - Payment
-      - Identity
-      - Shipment
+      - Drug Screening
+      - TB
+      - Titer
+      - Vaccination
+      - Physical
   securitySchemes:
     JWT:
       type: http

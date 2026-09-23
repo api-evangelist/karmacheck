@@ -4,13 +4,13 @@ info:
   description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
 
 
-    - [API basics](docs/overview/apis/api-overview.md)
+    - API basics
 
-    - [Authentication](docs/overview/apis/authentication.md)
+    - Authentication
 
-    - [Environments](docs/overview/apis/environments.md)
+    - Environments
 
-    - [Status codes and errors](docs/overview/apis/errors.md)'
+    - Status codes and errors'
   version: '1.0'
   contact:
     name: KarmaCheck
@@ -30,7 +30,7 @@ paths:
       tags:
       - Verification Book
       summary: Search Verification Book
-      description: 'Search for Verification Book entries. Results will be returned by matching against the name and aliases of book items. '
+      description: Search for Verification Book entries. Results will be returned by matching against the name and aliases of book items.
       operationId: post-vbook-search
       requestBody:
         content:
@@ -80,22 +80,16 @@ paths:
           description: Internal Server Error
 components:
   schemas:
-    PublicVerificationBookItem:
-      title: PublicVerificationBookItem
+    ListMetadata:
+      title: ListMetadata
       type: object
       properties:
-        id:
-          type: string
-          description: Id of the verification book item.
-        city:
-          type: string
-          description: City of the verification book item.
-        state:
-          type: string
-          description: State of the verification book item.
-        name:
-          type: string
-          description: Name of the verification book item.
+        page:
+          type: number
+          description: The page to return
+        pageSize:
+          type: number
+          description: The size of each page
     SearchDetails:
       title: searchDetails
       type: object
@@ -112,16 +106,22 @@ components:
             Must be valid JSON, for example if you want to search for a back slash (\) you must escape it as "\\".
 
             '
-    ListMetadata:
-      title: ListMetadata
+    PublicVerificationBookItem:
+      title: PublicVerificationBookItem
       type: object
       properties:
-        page:
-          type: number
-          description: The page to return
-        pageSize:
-          type: number
-          description: The size of each page
+        id:
+          type: string
+          description: Id of the verification book item.
+        city:
+          type: string
+          description: City of the verification book item.
+        state:
+          type: string
+          description: State of the verification book item.
+        name:
+          type: string
+          description: Name of the verification book item.
   securitySchemes:
     JWT:
       type: http

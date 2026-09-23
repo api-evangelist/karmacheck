@@ -1,0 +1,42 @@
+{
+  "provider": "karmacheck",
+  "sources": [
+    "_original/karmacheck-api-openapi.yml"
+  ],
+  "outputs": [
+    "karmacheck-authentication-api-openapi.yml",
+    "karmacheck-candidate-onboarding-api-openapi.yml",
+    "karmacheck-case-api-openapi.yml",
+    "karmacheck-cases-api-openapi.yml",
+    "karmacheck-packages-api-openapi.yml",
+    "karmacheck-secure-documents-api-openapi.yml",
+    "karmacheck-services-api-openapi.yml",
+    "karmacheck-users-api-openapi.yml",
+    "karmacheck-verification-book-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [
+    "karmacheck-api-openapi.yml: dangling $ref: #/components/parameters/language"
+  ],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "karmacheck-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "karmacheck-api-openapi.yml: tagged paths POST /case/id/{caseId}/cancel -> Case",
+    "karmacheck-api-openapi.yml: tagged paths POST /case/id/{caseId}/services/cancel -> Case",
+    "karmacheck-api-openapi.yml: declared missing tag: Case",
+    "karmacheck-api-openapi.yml: declared missing tag: Verification Book",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "karmacheck-authentication-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "karmacheck-candidate-onboarding-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "karmacheck-case-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "karmacheck-cases-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "karmacheck-packages-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "karmacheck-secure-documents-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "karmacheck-services-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "karmacheck-users-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "karmacheck-verification-book-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}

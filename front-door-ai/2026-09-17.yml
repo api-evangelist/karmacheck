@@ -1,0 +1,33 @@
+# Front Door AI Index — karmacheck — 2026-09-17
+# AI vocabulary counted on the provider's root page. Generated; do not edit.
+# `score` is null unless ownership is `own` — see front_door_ai.py.
+front_door_ai:
+  slug: karmacheck
+  lexicon_version: '1.0'
+  probed_at: '2026-09-17'
+  host: www.karmacheck.com
+  final_host: www.karmacheck.com
+  ownership: own
+  owner: karmacheck
+  shares_host_with: null
+  inherited_from: null
+  verdict: scored
+  score: 21
+  host_score: 21
+  density: 16.75
+  words: 1254
+  tiers:
+    agentic: 6
+    core: 15
+    model: 0
+  ambiguous: 10
+  top_terms:
+    AI: 13
+    agent: 6
+    MCP: 3
+    AI agent: 2
+    automation: 2
+    intelligence: 2
+    A.I.: 1
+    artificial intelligence: 1
+    prompts: 1

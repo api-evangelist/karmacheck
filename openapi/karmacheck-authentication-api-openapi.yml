@@ -4,13 +4,13 @@ info:
   description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
 
 
-    - [API basics](docs/overview/apis/api-overview.md)
+    - API basics
 
-    - [Authentication](docs/overview/apis/authentication.md)
+    - Authentication
 
-    - [Environments](docs/overview/apis/environments.md)
+    - Environments
 
-    - [Status codes and errors](docs/overview/apis/errors.md)'
+    - Status codes and errors'
   version: '1.0'
   contact:
     name: KarmaCheck

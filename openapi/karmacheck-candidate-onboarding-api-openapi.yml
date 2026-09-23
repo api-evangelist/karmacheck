@@ -4,13 +4,13 @@ info:
   description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
 
 
-    - [API basics](docs/overview/apis/api-overview.md)
+    - API basics
 
-    - [Authentication](docs/overview/apis/authentication.md)
+    - Authentication
 
-    - [Environments](docs/overview/apis/environments.md)
+    - Environments
 
-    - [Status codes and errors](docs/overview/apis/errors.md)'
+    - Status codes and errors'
   version: '1.0'
   contact:
     name: KarmaCheck
@@ -974,9 +974,7 @@ paths:
 
         This API marks the candidate object as not secured in the KarmaCheck system, which results in the candidate being prompted to set a password when the onboarding of the case begins.
 
-        After this call is complete, the candidate will be associated with the specific `caseId` that was attached to the invitation. The `caseId` will be used for saving all further case data, such as authorizations and acknowledgements. This assumes that a candidate will need to sign up with KarmaCheck before being able to continue to accept the invitation.
-
-        '
+        After this call is complete, the candidate will be associated with the specific `caseId` that was attached to the invitation. The `caseId` will be used for saving all further case data, such as authorizations and acknowledgements. This assumes that a candidate will need to sign up with KarmaCheck before being able to continue to accept the invitation.'
       operationId: post-invitation-candidate-create
       parameters: []
       requestBody:
@@ -1901,6 +1899,30 @@ paths:
           description: Internal Server Error
 components:
   schemas:
+    TestimonyContact:
+      title: TestimonyContact
+      type: object
+      properties:
+        phone:
+          type: string
+        email:
+          type: string
+        website:
+          type: string
+    LegalType:
+      title: LegalType
+      type: string
+      enum:
+      - general-all-disclosure
+      - general-ca-disclosure
+      - state-city-all-disclosure
+      - custom-ab-disclosure-1
+      - custom-ab-ca-disclosure-1
+      - custom-ab-disclosure-2
+      - custom-ab-ca-disclosure-2
+      - custom-dynamic-all-disclosure
+      - custom-dynamic-ca-disclosure
+      description: The type of legal disclosure.
     TestimonyEducationCreate:
       title: TestimonyEducation
       type: object
@@ -1965,147 +1987,6 @@ components:
         contact:
           $ref: '#/components/schemas/TestimonyContact'
           description: The institution's contact information.
-    TestimonyCustomProfessionalLicense:
-      title: TestimonyCustomProfessionalLicense
-      type: object
-      required:
-      - id
-      - caseDataIds
-      - cplcId
-      - cplcName
-      - fields
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The unique identifier of the testimony record.
-          readOnly: true
-        caseDataIds:
-          type: array
-          items:
-            type: string
-          readOnly: true
-        cplcId:
-          type: string
-        cplcName:
-          type: string
-          readOnly: true
-        fields:
-          type: array
-          items:
-            type: object
-            required:
-            - fieldId
-            - value
-            properties:
-              fieldId:
-                type: string
-              value:
-                type: string
-    InvitationStatusID:
-      title: InvitationStatusID
-      type: string
-      enum:
-      - 3f5e6898-6641-4685-8ee0-1363b7e10c98
-      - b5af27f7-8a03-4820-b2bd-82587dcacf5b
-      - d1962405-dd97-48f2-bede-530c2895481f
-      - 0f6acacc-71c4-43ec-80fa-941ff71c0c16
-      description: 'The status ID of a case invitation. See [Invitation status](docs/reference/invitation-status.md) for more details about each possible status.
-
-
-        - pending: 3f5e6898-6641-4685-8ee0-1363b7e10c98
-
-        - expired: b5af27f7-8a03-4820-b2bd-82587dcacf5b
-
-        - completed: d1962405-dd97-48f2-bede-530c2895481f
-
-        - cancelled: 0f6acacc-71c4-43ec-80fa-941ff71c0c16 '
-    LegalAcknowledgmentSignature:
-      title: LegalAcknowledgmentSignature
-      type: object
-      required:
-      - signatureType
-      - signature
-      properties:
-        signatureType:
-          type: string
-          enum:
-          - electronic
-          - manual
-        signature:
-          type: string
-          description: For candidates who onboarded using KarmaCheck's onboarding experience, the value that the candidate entered into the signature input field on the legal step. This might not be exactly the same as the name that the case was ordered under.
-    TestimonyEmploymentCreate:
-      title: TestimonyEmployment
-      type: object
-      description: The testimony details when `testimonyTypeId` is `aa99dc08-0238-4050-9176-bf322e077f71`. **Note:** Multiple properties are currently optional, but are strongly recommended to be included in requests.
-      required:
-      - employer
-      - city
-      - state
-      - country
-      - current
-      - position
-      - monthBegin
-      - yearBegin
-      - monthEnd
-      - yearEnd
-      properties:
-        employer:
-          type: string
-          description: The name of the candidate's current or former employer. Must be less than or equal to 100 characters.
-        city:
-          type: string
-          description: The city of employment. Recommended to be included in *all* requests.
-        state:
-          type: string
-          description: The two-letter state code. Recommended to be included in *all* requests.
-        country:
-          type: string
-          description: The ISO 3166 (2 or 3 letter) code. Recommended to be included in *all* requests.
-        nameIfDifferent:
-          type: string
-          description: The candidate's name that's on record with the employer.
-        current:
-          type: boolean
-          description: If true, the candidate is currently employed with the employer. If false, the candidate is no longer employed with the employer. Recommended to be included in *all* requests. (Required true if `monthEnd` and `yearEnd` are not provided)
-          default: false
-        okToContact:
-          type: boolean
-          description: If true, the employer can be contacted about the candidate. If false, the employer cannot be contacted. Recommended to be included in *all* requests.
-        position:
-          type: string
-          description: The candidate's position with the employer.
-        incomeAmount:
-          type: string
-          description: The amount earned.  Recommended to be included for Employment Income Verification.
-        incomeCurrency:
-          type: string
-          description: The currency of the income earned. This is applicable to Employment Income Verification.
-        incomeFrequency:
-          type: string
-          description: The frequency of the amount earned. Recommended to be included for Employment Income Verification.
-        monthBegin:
-          type: string
-          description: The month in which the candidate began their employment.
-        yearBegin:
-          type: string
-          description: The year in which the candidate began their employment.
-        monthEnd:
-          type: string
-          description: The month in which the candidate ended their employment. Not applicable if `current` is true. (Required if `current` is false or not provided)
-        yearEnd:
-          type: string
-          description: The year in which the candidate ended their employment. Not applicable if `current` is true. (Required if `current` is false or not provided)
-        additionalInfo:
-          type: string
-        contact:
-          $ref: '#/components/schemas/TestimonyContact'
-          description: The employer's contact information.
-        staffingAgency:
-          type: string
-          description: The Staffing Agency that the candidate is working for the employer through.(If applicable)
-          maxLength: 100
     TestimonyType:
       title: TestimonyType
       type: string
@@ -2130,31 +2011,45 @@ components:
         - Address: `4143f0d4-4e3d-4ff7-b40a-9a26b569cf32`
 
         - Professional License and Certification: `testimony-type-cplc`'
-    Testimony:
-      title: Testimony
+    TestimonyAddress:
+      title: TestimonyAddress
       type: object
       required:
-      - testimonyTypeId
+      - id
+      - city
+      - state
+      - country
+      - address
+      - postalCode
+      - current
       properties:
-        testimonyTypeId:
-          $ref: '#/components/schemas/TestimonyType'
+        id:
           type: string
-        testimonySubType:
+          format: uuid
+          description: The unique identifier of the testimony record.
+          readOnly: true
+        city:
           type: string
-          description: Only required for Professional License and Certification testimony, for which you must provide the `cplcId` as the `testimonySubType`. For education testimony, this field must be provided as `no-testimony-to-verify` if the candidate has no education testimony to verify; this provides a form of candidate affirmation that they have no education history to verify. Simply leaving off any testimony records in such a scenario will require KarmaCheck Customer Success intervention and cause processing delays.
-        description:
+          maxLength: 30
+        state:
           type: string
-          description: A free-form description of the testimony. If not provided, one will be automatically generated based on the type and details of the testimony.
-        details:
-          description: Shape of payload must correspond to the `testimonyTypeId`.
-          oneOf:
-          - $ref: '#/components/schemas/TestimonyEducationCreate'
-          - $ref: '#/components/schemas/TestimonyEmploymentCreate'
-          - $ref: '#/components/schemas/TestimonyDriversLicense'
-          - $ref: '#/components/schemas/TestimonyParentalConsent'
-          - $ref: '#/components/schemas/TestimonyAddress'
-          - $ref: '#/components/schemas/TestimonyCustomProfessionalLicense'
-          type: object
+          description: For US, use 2-letter abbreviation
+        country:
+          type: string
+          description: ISO 3166 (2 or 3 letter) code
+        address:
+          type: string
+          maxLength: 60
+        address2:
+          type: string
+        postalCode:
+          type: string
+        current:
+          type: boolean
+        source:
+          type: string
+          example: certn
+          readOnly: true
     TestimonyEmployment:
       title: TestimonyEmployment
       type: object
@@ -2231,152 +2126,83 @@ components:
           type: string
           description: The Staffing Agency that the candidate is working for the employer through. (If applicable)
           maxLength: 100
-    LegalAcknowledgmentDisclosure:
-      title: LegalAcknowledgmentDisclosure
-      type: object
-      properties:
-        sendReport:
-          type: boolean
-          description: If true, a report notification will be emailed to the candidate when the report is finished.
-          default: false
-        signature:
-          type: string
-          description: The name entered into the signature input field on the legal step during candidate onboarding. This value might not be exactly the same as the name that the case was ordered under.
-    LegalType:
-      title: LegalType
-      type: string
-      enum:
-      - general-all-disclosure
-      - general-ca-disclosure
-      - state-city-all-disclosure
-      - custom-ab-disclosure-1
-      - custom-ab-ca-disclosure-1
-      - custom-ab-disclosure-2
-      - custom-ab-ca-disclosure-2
-      - custom-dynamic-all-disclosure
-      - custom-dynamic-ca-disclosure
-      description: The type of legal disclosure.
-    LegalAcknowledgmentDisclosures:
-      title: LegalAcknowledgmentDisclosures
+    LegalAcknowledgmentSignature:
+      title: LegalAcknowledgmentSignature
       type: object
       required:
-      - sendReport
-      - list
+      - signatureType
+      - signature
       properties:
-        sendReport:
-          type: boolean
-          description: If true, a report notification will be emailed to the candidate when the report is finished.
-        list:
+        signatureType:
+          type: string
+          enum:
+          - electronic
+          - manual
+        signature:
+          type: string
+          description: For candidates who onboarded using KarmaCheck's onboarding experience, the value that the candidate entered into the signature input field on the legal step. This might not be exactly the same as the name that the case was ordered under.
+    TestimonyCustomProfessionalLicense:
+      title: TestimonyCustomProfessionalLicense
+      type: object
+      required:
+      - id
+      - caseDataIds
+      - cplcId
+      - cplcName
+      - fields
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier of the testimony record.
+          readOnly: true
+        caseDataIds:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        cplcId:
+          type: string
+        cplcName:
+          type: string
+          readOnly: true
+        fields:
           type: array
           items:
             type: object
             required:
-            - legalType
+            - fieldId
+            - value
             properties:
-              legalType:
-                $ref: '#/components/schemas/LegalType'
-                description: The type of legal disclosure. This is the value returned after calling [Request location-specific disclosures](karma-api-openapi.yaml/paths/~1case~1id~1{caseId}~1{disclosureType}~1{language}/post).
-              signature:
+              fieldId:
                 type: string
-                description: The value that the candidate entered into the signature input field on the legal step. Required if `legalType` is `general-*` or `custom-*`; not required for other types of legal disclosures.
-    TestimonyDriversLicense:
-      title: TestimonyDriversLicense
+              value:
+                type: string
+    Testimony:
+      title: Testimony
       type: object
       required:
-      - id
-      - state
-      - licenseNumber
+      - testimonyTypeId
       properties:
-        id:
+        testimonyTypeId:
+          $ref: '#/components/schemas/TestimonyType'
           type: string
-          format: uuid
-          description: The unique identifier of the testimony record.
-          readOnly: true
-        country:
+        testimonySubType:
           type: string
-        state:
+          description: Only required for Professional License and Certification testimony, for which you must provide the `cplcId` as the `testimonySubType`. For education testimony, this field must be provided as `no-testimony-to-verify` if the candidate has no education testimony to verify; this provides a form of candidate affirmation that they have no education history to verify. Simply leaving off any testimony records in such a scenario will require KarmaCheck Customer Success intervention and cause processing delays.
+        description:
           type: string
-        licenseNumber:
-          type: string
-          description: Must be a valid [state driver's license format](https://ntsi.com/drivers-license-format/).
-        firstNameIfDifferent:
-          type: string
-        middleInitialIfDifferent:
-          type: string
-        lastNameIfDifferent:
-          type: string
-        source:
-          type: string
-          readOnly: true
-    TestimonyContact:
-      title: TestimonyContact
-      type: object
-      properties:
-        phone:
-          type: string
-        email:
-          type: string
-        website:
-          type: string
-    TestimonyAddress:
-      title: TestimonyAddress
-      type: object
-      required:
-      - id
-      - city
-      - state
-      - country
-      - address
-      - postalCode
-      - current
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The unique identifier of the testimony record.
-          readOnly: true
-        city:
-          type: string
-          maxLength: 30
-        state:
-          type: string
-          description: For US, use 2-letter abbreviation
-        country:
-          type: string
-          description: ISO 3166 (2 or 3 letter) code
-        address:
-          type: string
-          maxLength: 60
-        address2:
-          type: string
-        postalCode:
-          type: string
-        current:
-          type: boolean
-        source:
-          type: string
-          example: certn
-          readOnly: true
-    TestimonyParentalConsent:
-      title: TestimonyParentalConsent
-      type: object
-      required:
-      - id
-      - parentGivenName
-      - parentFamilyName
-      - parentEmail
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The unique identifier of the testimony record.
-          readOnly: true
-        parentGivenName:
-          type: string
-        parentFamilyName:
-          type: string
-        parentEmail:
-          type: string
+          description: A free-form description of the testimony. If not provided, one will be automatically generated based on the type and details of the testimony.
+        details:
+          description: Shape of payload must correspond to the `testimonyTypeId`.
+          oneOf:
+          - $ref: '#/components/schemas/TestimonyEducationCreate'
+          - $ref: '#/components/schemas/TestimonyEmploymentCreate'
+          - $ref: '#/components/schemas/TestimonyDriversLicense'
+          - $ref: '#/components/schemas/TestimonyParentalConsent'
+          - $ref: '#/components/schemas/TestimonyAddress'
+          - $ref: '#/components/schemas/TestimonyCustomProfessionalLicense'
+          type: object
     TestimonyEducation:
       title: TestimonyEducation
       type: object
@@ -2446,6 +2272,178 @@ components:
         contact:
           $ref: '#/components/schemas/TestimonyContact'
           description: The institution's contact information.
+    TestimonyParentalConsent:
+      title: TestimonyParentalConsent
+      type: object
+      required:
+      - id
+      - parentGivenName
+      - parentFamilyName
+      - parentEmail
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier of the testimony record.
+          readOnly: true
+        parentGivenName:
+          type: string
+        parentFamilyName:
+          type: string
+        parentEmail:
+          type: string
+    TestimonyDriversLicense:
+      title: TestimonyDriversLicense
+      type: object
+      required:
+      - id
+      - state
+      - licenseNumber
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier of the testimony record.
+          readOnly: true
+        country:
+          type: string
+        state:
+          type: string
+        licenseNumber:
+          type: string
+          description: Must be a valid [state driver's license format](https://ntsi.com/drivers-license-format/).
+        firstNameIfDifferent:
+          type: string
+        middleInitialIfDifferent:
+          type: string
+        lastNameIfDifferent:
+          type: string
+        source:
+          type: string
+          readOnly: true
+    LegalAcknowledgmentDisclosure:
+      title: LegalAcknowledgmentDisclosure
+      type: object
+      properties:
+        sendReport:
+          type: boolean
+          description: If true, a report notification will be emailed to the candidate when the report is finished.
+          default: false
+        signature:
+          type: string
+          description: The name entered into the signature input field on the legal step during candidate onboarding. This value might not be exactly the same as the name that the case was ordered under.
+    TestimonyEmploymentCreate:
+      title: TestimonyEmployment
+      type: object
+      description: The testimony details when `testimonyTypeId` is `aa99dc08-0238-4050-9176-bf322e077f71`. **Note:** Multiple properties are currently optional, but are strongly recommended to be included in requests.
+      required:
+      - employer
+      - city
+      - state
+      - country
+      - current
+      - position
+      - monthBegin
+      - yearBegin
+      - monthEnd
+      - yearEnd
+      properties:
+        employer:
+          type: string
+          description: The name of the candidate's current or former employer. Must be less than or equal to 100 characters.
+        city:
+          type: string
+          description: The city of employment. Recommended to be included in *all* requests.
+        state:
+          type: string
+          description: The two-letter state code. Recommended to be included in *all* requests.
+        country:
+          type: string
+          description: The ISO 3166 (2 or 3 letter) code. Recommended to be included in *all* requests.
+        nameIfDifferent:
+          type: string
+          description: The candidate's name that's on record with the employer.
+        current:
+          type: boolean
+          description: If true, the candidate is currently employed with the employer. If false, the candidate is no longer employed with the employer. Recommended to be included in *all* requests. (Required true if `monthEnd` and `yearEnd` are not provided)
+          default: false
+        okToContact:
+          type: boolean
+          description: If true, the employer can be contacted about the candidate. If false, the employer cannot be contacted. Recommended to be included in *all* requests.
+        position:
+          type: string
+          description: The candidate's position with the employer.
+        incomeAmount:
+          type: string
+          description: The amount earned.  Recommended to be included for Employment Income Verification.
+        incomeCurrency:
+          type: string
+          description: The currency of the income earned. This is applicable to Employment Income Verification.
+        incomeFrequency:
+          type: string
+          description: The frequency of the amount earned. Recommended to be included for Employment Income Verification.
+        monthBegin:
+          type: string
+          description: The month in which the candidate began their employment.
+        yearBegin:
+          type: string
+          description: The year in which the candidate began their employment.
+        monthEnd:
+          type: string
+          description: The month in which the candidate ended their employment. Not applicable if `current` is true. (Required if `current` is false or not provided)
+        yearEnd:
+          type: string
+          description: The year in which the candidate ended their employment. Not applicable if `current` is true. (Required if `current` is false or not provided)
+        additionalInfo:
+          type: string
+        contact:
+          $ref: '#/components/schemas/TestimonyContact'
+          description: The employer's contact information.
+        staffingAgency:
+          type: string
+          description: The Staffing Agency that the candidate is working for the employer through.(If applicable)
+          maxLength: 100
+    InvitationStatusID:
+      title: InvitationStatusID
+      type: string
+      enum:
+      - 3f5e6898-6641-4685-8ee0-1363b7e10c98
+      - b5af27f7-8a03-4820-b2bd-82587dcacf5b
+      - d1962405-dd97-48f2-bede-530c2895481f
+      - 0f6acacc-71c4-43ec-80fa-941ff71c0c16
+      description: 'The status ID of a case invitation. See [Invitation status](docs/reference/invitation-status.md) for more details about each possible status.
+
+
+        - pending: 3f5e6898-6641-4685-8ee0-1363b7e10c98
+
+        - expired: b5af27f7-8a03-4820-b2bd-82587dcacf5b
+
+        - completed: d1962405-dd97-48f2-bede-530c2895481f
+
+        - cancelled: 0f6acacc-71c4-43ec-80fa-941ff71c0c16 '
+    LegalAcknowledgmentDisclosures:
+      title: LegalAcknowledgmentDisclosures
+      type: object
+      required:
+      - sendReport
+      - list
+      properties:
+        sendReport:
+          type: boolean
+          description: If true, a report notification will be emailed to the candidate when the report is finished.
+        list:
+          type: array
+          items:
+            type: object
+            required:
+            - legalType
+            properties:
+              legalType:
+                $ref: '#/components/schemas/LegalType'
+                description: The type of legal disclosure. This is the value returned after calling [Request location-specific disclosures](karma-api-openapi.yaml/paths/~1case~1id~1{caseId}~1{disclosureType}~1{language}/post).
+              signature:
+                type: string
+                description: The value that the candidate entered into the signature input field on the legal step. Required if `legalType` is `general-*` or `custom-*`; not required for other types of legal disclosures.
   securitySchemes:
     JWT:
       type: http

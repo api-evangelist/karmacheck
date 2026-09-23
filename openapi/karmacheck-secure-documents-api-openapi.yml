@@ -4,13 +4,13 @@ info:
   description: 'All requests to the KarmaCheck API require a JSON Web Token (JWT) in the Authorization header. For an overview of the API and its authentication method, refer to the following topics:
 
 
-    - [API basics](docs/overview/apis/api-overview.md)
+    - API basics
 
-    - [Authentication](docs/overview/apis/authentication.md)
+    - Authentication
 
-    - [Environments](docs/overview/apis/environments.md)
+    - Environments
 
-    - [Status codes and errors](docs/overview/apis/errors.md)'
+    - Status codes and errors'
   version: '1.0'
   contact:
     name: KarmaCheck
@@ -34,13 +34,13 @@ paths:
       description: 'Creates secure document records in the KarmaCheck system and associates uploaded documents with an existing case.
 
 
-        This is step 3 of 3 when adding documents to KarmaCheck. At this stage, you should have successfully uploaded your documents via the URLs obtained from the [Generate secure document upload URLs](paths/~1document~1secure~1upload/post) API call. The uploaded documents are unavailable for use in KarmaCheck until they are associated with a case in this third step.
+        This is step 3 of 3 when adding documents to KarmaCheck. At this stage, you should have successfully uploaded your documents via the URLs obtained from the Generate secure document upload URLs API call. The uploaded documents are unavailable for use in KarmaCheck until they are associated with a case in this third step.
 
 
         Document associations are identified by sending access grants. If your token does not have access to associate a document with a specific entity, a 403 Forbidden response will be returned.
 
 
-        In addition to associating a document with an existing case, you can call this API to create candidate disclosure and authorization document records before a case is created. When [creating a case](paths/~1case~1create/post), you can send the newly created document IDs to associate these documents with the case and the candidate. Note that this association is allowed only when the document type is a candidate disclosure or authorization.'
+        In addition to associating a document with an existing case, you can call this API to create candidate disclosure and authorization document records before a case is created. When creating a case, you can send the newly created document IDs to associate these documents with the case and the candidate. Note that this association is allowed only when the document type is a candidate disclosure or authorization.'
       operationId: post-document-secure-create
       requestBody:
         content:
@@ -470,41 +470,26 @@ paths:
           description: Internal Server Error
 components:
   schemas:
-    DocumentType:
-      title: DocumentType
-      type: array
-      items:
-        type: object
-        required:
-        - id
-        - secureDocumentType
-        - displayName
-        properties:
-          id:
-            $ref: '#/components/schemas/DocumentTypeID'
-            description: The unique identifier for the secure document type. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
-          secureDocumentType:
-            type: string
-            enum:
-            - tin-check-result
-            - oig-verification-proof
-            - provider-html-report
-            - identification
-            - candidate-disclosures-and-authorizations
-            - cbsv-authorization
-            - international-report
-            - education-document
-            - employment-document
-            - ohs-breath-alcohol
-            - ohs-chain-of-custody
-            - ohs-occupational-health
-            - ohs-participant-passport
-            - ohs-result-certificate
-            - search-result
-            description: The name of the secure document type.
-          displayName:
-            type: string
-            description: The name of the secure document type that's displayed to dashboard users.
+    DocumentTypeID:
+      title: DocumentTypeID
+      type: string
+      enum:
+      - 06813017-94ef-4250-9083-375935ce9dc8
+      - 4ad585b6-b087-11ec-9bf1-df77b62cb712
+      - 7d25e1de-0b46-4a6c-bd06-d0b55526af08
+      - 857d42f3-73b6-4588-8855-0ab49e376a84
+      - candidate-disclosures-and-authorizations
+      - cbsv-authorization
+      - da070d09-b52f-4423-9c94-eff458ea3aa0
+      - education-document
+      - employment-document
+      - ohs-breath-alcohol
+      - ohs-chain-of-custody
+      - ohs-occupational-health
+      - ohs-participant-passport
+      - ohs-result-certificate
+      - search-result
+      description: The ID of the document type that the secure document is categorized under. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
     DocumentCreateRecords:
       title: DocumentCreateRecords
       type: object
@@ -554,26 +539,41 @@ components:
             caseId:
               type: string
               description: The ID of the case to associate with the document.
-    DocumentTypeID:
-      title: DocumentTypeID
-      type: string
-      enum:
-      - 06813017-94ef-4250-9083-375935ce9dc8
-      - 4ad585b6-b087-11ec-9bf1-df77b62cb712
-      - 7d25e1de-0b46-4a6c-bd06-d0b55526af08
-      - 857d42f3-73b6-4588-8855-0ab49e376a84
-      - candidate-disclosures-and-authorizations
-      - cbsv-authorization
-      - da070d09-b52f-4423-9c94-eff458ea3aa0
-      - education-document
-      - employment-document
-      - ohs-breath-alcohol
-      - ohs-chain-of-custody
-      - ohs-occupational-health
-      - ohs-participant-passport
-      - ohs-result-certificate
-      - search-result
-      description: The ID of the document type that the secure document is categorized under. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
+    DocumentType:
+      title: DocumentType
+      type: array
+      items:
+        type: object
+        required:
+        - id
+        - secureDocumentType
+        - displayName
+        properties:
+          id:
+            $ref: '#/components/schemas/DocumentTypeID'
+            description: The unique identifier for the secure document type. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
+          secureDocumentType:
+            type: string
+            enum:
+            - tin-check-result
+            - oig-verification-proof
+            - provider-html-report
+            - identification
+            - candidate-disclosures-and-authorizations
+            - cbsv-authorization
+            - international-report
+            - education-document
+            - employment-document
+            - ohs-breath-alcohol
+            - ohs-chain-of-custody
+            - ohs-occupational-health
+            - ohs-participant-passport
+            - ohs-result-certificate
+            - search-result
+            description: The name of the secure document type.
+          displayName:
+            type: string
+            description: The name of the secure document type that's displayed to dashboard users.
     DocumentRecords:
       title: DocumentRecords
       type: object
