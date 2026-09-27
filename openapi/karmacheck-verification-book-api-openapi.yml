@@ -80,32 +80,6 @@ paths:
           description: Internal Server Error
 components:
   schemas:
-    ListMetadata:
-      title: ListMetadata
-      type: object
-      properties:
-        page:
-          type: number
-          description: The page to return
-        pageSize:
-          type: number
-          description: The size of each page
-    SearchDetails:
-      title: searchDetails
-      type: object
-      required:
-      - vbookTypeId
-      properties:
-        vbookTypeId:
-          type: string
-          description: The type of vBook items you want returned. Currently only supports employment(vbt_employment) and education(vbt_education).
-        nameQuery:
-          type: string
-          description: 'The name in which you want to search for. Not providing this will return all vbookType items.
-
-            Must be valid JSON, for example if you want to search for a back slash (\) you must escape it as "\\".
-
-            '
     PublicVerificationBookItem:
       title: PublicVerificationBookItem
       type: object
@@ -122,6 +96,32 @@ components:
         name:
           type: string
           description: Name of the verification book item.
+    SearchDetails:
+      title: searchDetails
+      type: object
+      required:
+      - vbookTypeId
+      properties:
+        vbookTypeId:
+          type: string
+          description: The type of vBook items you want returned. Currently only supports employment(vbt_employment) and education(vbt_education).
+        nameQuery:
+          type: string
+          description: 'The name in which you want to search for. Not providing this will return all vbookType items.
+
+            Must be valid JSON, for example if you want to search for a back slash (\) you must escape it as "\\".
+
+            '
+    ListMetadata:
+      title: ListMetadata
+      type: object
+      properties:
+        page:
+          type: number
+          description: The page to return
+        pageSize:
+          type: number
+          description: The size of each page
   securitySchemes:
     JWT:
       type: http

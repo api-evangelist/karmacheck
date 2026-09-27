@@ -193,28 +193,26 @@ paths:
       - JWT: []
 components:
   schemas:
-    ServiceTypeName:
-      title: ServiceTypeName
+    ServiceSubCategory:
+      title: ServiceSubCategory
       type: string
-      description: The type of service.
+      description: The subcategory that a service belongs to.
       enum:
-      - Screening
-      - Legal
-      - Payment
-      - Identity
-      - Shipment
-    ServiceCategory:
-      title: ServiceCategory
+      - Drug Screening
+      - TB
+      - Titer
+      - Vaccination
+      - Physical
+    ServiceSubCategoryId:
+      title: ServiceSubCategoryId
       type: string
-      description: The category that a service belongs to.
+      description: The unique ID of the service subcategory.
       enum:
-      - Payment
-      - Identity Verification
-      - Criminal Check
-      - Motor Vehicle Record Check
-      - Verification
-      - Occupational Health Screening
-      - Professional License
+      - service-subcat-drug
+      - service-subcat-tb
+      - service-subcat-titer
+      - service-subcat-vacc
+      - service-subcat-physical
     ServiceTypeId:
       title: ServiceTypeId
       type: string
@@ -237,16 +235,16 @@ components:
       - service-cat-verification
       - service-cat-ohs
       - service-cat-pro-lic
-    ServiceSubCategoryId:
-      title: ServiceSubCategoryId
+    ServiceTypeName:
+      title: ServiceTypeName
       type: string
-      description: The unique ID of the service subcategory.
+      description: The type of service.
       enum:
-      - service-subcat-drug
-      - service-subcat-tb
-      - service-subcat-titer
-      - service-subcat-vacc
-      - service-subcat-physical
+      - Screening
+      - Legal
+      - Payment
+      - Identity
+      - Shipment
     ServiceGroupServices:
       title: ServiceGroupServices
       type: object
@@ -355,16 +353,18 @@ components:
                 description: True if the service is selected by default when a dashboard user selects the package for a case; false otherwise.
               serviceGroupServicesId:
                 type: string
-    ServiceSubCategory:
-      title: ServiceSubCategory
+    ServiceCategory:
+      title: ServiceCategory
       type: string
-      description: The subcategory that a service belongs to.
+      description: The category that a service belongs to.
       enum:
-      - Drug Screening
-      - TB
-      - Titer
-      - Vaccination
-      - Physical
+      - Payment
+      - Identity Verification
+      - Criminal Check
+      - Motor Vehicle Record Check
+      - Verification
+      - Occupational Health Screening
+      - Professional License
   securitySchemes:
     JWT:
       type: http

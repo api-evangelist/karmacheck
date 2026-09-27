@@ -470,126 +470,6 @@ paths:
           description: Internal Server Error
 components:
   schemas:
-    DocumentTypeID:
-      title: DocumentTypeID
-      type: string
-      enum:
-      - 06813017-94ef-4250-9083-375935ce9dc8
-      - 4ad585b6-b087-11ec-9bf1-df77b62cb712
-      - 7d25e1de-0b46-4a6c-bd06-d0b55526af08
-      - 857d42f3-73b6-4588-8855-0ab49e376a84
-      - candidate-disclosures-and-authorizations
-      - cbsv-authorization
-      - da070d09-b52f-4423-9c94-eff458ea3aa0
-      - education-document
-      - employment-document
-      - ohs-breath-alcohol
-      - ohs-chain-of-custody
-      - ohs-occupational-health
-      - ohs-participant-passport
-      - ohs-result-certificate
-      - search-result
-      description: The ID of the document type that the secure document is categorized under. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
-    DocumentCreateRecords:
-      title: DocumentCreateRecords
-      type: object
-      required:
-      - list
-      properties:
-        list:
-          type: array
-          items:
-            type: object
-            required:
-            - originalFileName
-            - documentTypeId
-            - fileKey
-            properties:
-              originalFileName:
-                type: string
-                description: The file name for the document that was uploaded.
-              documentTypeId:
-                type: string
-                description: 'The type of document to store.
-
-
-                  Allowed value: `candidate-disclosures-and-authorizations`'
-              fileKey:
-                type: string
-                description: The value from the [Generate secure document upload URLs](karma-api-openapi.yaml/paths/~1document~1secure~1upload/post) response.
-              title:
-                type: string
-                description: A title for the document.
-              description:
-                type: string
-                description: A description of the document.
-              fileFormat:
-                description: The file format (e.g. pdf, jpeg, png)
-                type: string
-                enum:
-                - pdf
-                - jpg
-                - jpeg
-                - png
-        accessGrants:
-          type: object
-          required:
-          - caseId
-          properties:
-            caseId:
-              type: string
-              description: The ID of the case to associate with the document.
-    DocumentType:
-      title: DocumentType
-      type: array
-      items:
-        type: object
-        required:
-        - id
-        - secureDocumentType
-        - displayName
-        properties:
-          id:
-            $ref: '#/components/schemas/DocumentTypeID'
-            description: The unique identifier for the secure document type. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
-          secureDocumentType:
-            type: string
-            enum:
-            - tin-check-result
-            - oig-verification-proof
-            - provider-html-report
-            - identification
-            - candidate-disclosures-and-authorizations
-            - cbsv-authorization
-            - international-report
-            - education-document
-            - employment-document
-            - ohs-breath-alcohol
-            - ohs-chain-of-custody
-            - ohs-occupational-health
-            - ohs-participant-passport
-            - ohs-result-certificate
-            - search-result
-            description: The name of the secure document type.
-          displayName:
-            type: string
-            description: The name of the secure document type that's displayed to dashboard users.
-    DocumentRecords:
-      title: DocumentRecords
-      type: object
-      required:
-      - list
-      properties:
-        list:
-          type: array
-          items:
-            type: object
-            required:
-            - secureDocumentId
-            properties:
-              secureDocumentId:
-                type: string
-                description: The unique identifier for the secure document.
     DocumentFiles:
       title: DocumentFiles
       type: object
@@ -656,6 +536,126 @@ components:
           displayReport:
             type: integer
             description: 'A boolean integer: 1 (true) if the document is included in the report for the case; 0 (false) otherwise.'
+    DocumentCreateRecords:
+      title: DocumentCreateRecords
+      type: object
+      required:
+      - list
+      properties:
+        list:
+          type: array
+          items:
+            type: object
+            required:
+            - originalFileName
+            - documentTypeId
+            - fileKey
+            properties:
+              originalFileName:
+                type: string
+                description: The file name for the document that was uploaded.
+              documentTypeId:
+                type: string
+                description: 'The type of document to store.
+
+
+                  Allowed value: `candidate-disclosures-and-authorizations`'
+              fileKey:
+                type: string
+                description: The value from the [Generate secure document upload URLs](karma-api-openapi.yaml/paths/~1document~1secure~1upload/post) response.
+              title:
+                type: string
+                description: A title for the document.
+              description:
+                type: string
+                description: A description of the document.
+              fileFormat:
+                description: The file format (e.g. pdf, jpeg, png)
+                type: string
+                enum:
+                - pdf
+                - jpg
+                - jpeg
+                - png
+        accessGrants:
+          type: object
+          required:
+          - caseId
+          properties:
+            caseId:
+              type: string
+              description: The ID of the case to associate with the document.
+    DocumentRecords:
+      title: DocumentRecords
+      type: object
+      required:
+      - list
+      properties:
+        list:
+          type: array
+          items:
+            type: object
+            required:
+            - secureDocumentId
+            properties:
+              secureDocumentId:
+                type: string
+                description: The unique identifier for the secure document.
+    DocumentType:
+      title: DocumentType
+      type: array
+      items:
+        type: object
+        required:
+        - id
+        - secureDocumentType
+        - displayName
+        properties:
+          id:
+            $ref: '#/components/schemas/DocumentTypeID'
+            description: The unique identifier for the secure document type. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
+          secureDocumentType:
+            type: string
+            enum:
+            - tin-check-result
+            - oig-verification-proof
+            - provider-html-report
+            - identification
+            - candidate-disclosures-and-authorizations
+            - cbsv-authorization
+            - international-report
+            - education-document
+            - employment-document
+            - ohs-breath-alcohol
+            - ohs-chain-of-custody
+            - ohs-occupational-health
+            - ohs-participant-passport
+            - ohs-result-certificate
+            - search-result
+            description: The name of the secure document type.
+          displayName:
+            type: string
+            description: The name of the secure document type that's displayed to dashboard users.
+    DocumentTypeID:
+      title: DocumentTypeID
+      type: string
+      enum:
+      - 06813017-94ef-4250-9083-375935ce9dc8
+      - 4ad585b6-b087-11ec-9bf1-df77b62cb712
+      - 7d25e1de-0b46-4a6c-bd06-d0b55526af08
+      - 857d42f3-73b6-4588-8855-0ab49e376a84
+      - candidate-disclosures-and-authorizations
+      - cbsv-authorization
+      - da070d09-b52f-4423-9c94-eff458ea3aa0
+      - education-document
+      - employment-document
+      - ohs-breath-alcohol
+      - ohs-chain-of-custody
+      - ohs-occupational-health
+      - ohs-participant-passport
+      - ohs-result-certificate
+      - search-result
+      description: The ID of the document type that the secure document is categorized under. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
   securitySchemes:
     JWT:
       type: http
