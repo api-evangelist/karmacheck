@@ -470,30 +470,6 @@ paths:
           description: Internal Server Error
 components:
   schemas:
-    DocumentFiles:
-      title: DocumentFiles
-      type: object
-      required:
-      - files
-      properties:
-        files:
-          type: array
-          description: An array that enables the generation of upload URLs for multiple files at once. Note that the order matters. Make sure to upload the first file to the first URL, and so on.
-          items:
-            type: object
-            required:
-            - documentTypeId
-            - mimeType
-            properties:
-              documentTypeId:
-                type: string
-                description: 'The ID for the type of document to be uploaded.
-
-
-                  Allowed value: `candidate-disclosures-and-authorizations`'
-              mimeType:
-                type: string
-                description: The MIME type of the file to be uploaded. See [Get secure document MIME types](karma-api-openapi.yaml/paths/~1document~1secure~1mimetypes/get) for details.
     DocumentList:
       title: DocumentList
       type: array
@@ -536,6 +512,30 @@ components:
           displayReport:
             type: integer
             description: 'A boolean integer: 1 (true) if the document is included in the report for the case; 0 (false) otherwise.'
+    DocumentFiles:
+      title: DocumentFiles
+      type: object
+      required:
+      - files
+      properties:
+        files:
+          type: array
+          description: An array that enables the generation of upload URLs for multiple files at once. Note that the order matters. Make sure to upload the first file to the first URL, and so on.
+          items:
+            type: object
+            required:
+            - documentTypeId
+            - mimeType
+            properties:
+              documentTypeId:
+                type: string
+                description: 'The ID for the type of document to be uploaded.
+
+
+                  Allowed value: `candidate-disclosures-and-authorizations`'
+              mimeType:
+                type: string
+                description: The MIME type of the file to be uploaded. See [Get secure document MIME types](karma-api-openapi.yaml/paths/~1document~1secure~1mimetypes/get) for details.
     DocumentCreateRecords:
       title: DocumentCreateRecords
       type: object

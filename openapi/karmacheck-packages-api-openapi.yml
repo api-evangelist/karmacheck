@@ -193,58 +193,18 @@ paths:
       - JWT: []
 components:
   schemas:
-    ServiceSubCategory:
-      title: ServiceSubCategory
+    ServiceCategory:
+      title: ServiceCategory
       type: string
-      description: The subcategory that a service belongs to.
+      description: The category that a service belongs to.
       enum:
-      - Drug Screening
-      - TB
-      - Titer
-      - Vaccination
-      - Physical
-    ServiceSubCategoryId:
-      title: ServiceSubCategoryId
-      type: string
-      description: The unique ID of the service subcategory.
-      enum:
-      - service-subcat-drug
-      - service-subcat-tb
-      - service-subcat-titer
-      - service-subcat-vacc
-      - service-subcat-physical
-    ServiceTypeId:
-      title: ServiceTypeId
-      type: string
-      description: 'The unique ID of the service type. A service can be one of the following types: screening, legal, payment, identity, or shipment.'
-      enum:
-      - 30bc2c03-c8dd-409a-8da6-e0070ea6a681
-      - a3b74b1b-b665-40be-bad2-2a49c801cf3f
-      - service-type-payment
-      - service-type-idv
-      - service-type-shipment
-    ServiceCategoryId:
-      title: ServiceCategoryId
-      type: string
-      description: The unique ID of the service category.
-      enum:
-      - service-cat-payment
-      - service-cat-idv
-      - service-cat-criminal
-      - service-cat-mvr
-      - service-cat-verification
-      - service-cat-ohs
-      - service-cat-pro-lic
-    ServiceTypeName:
-      title: ServiceTypeName
-      type: string
-      description: The type of service.
-      enum:
-      - Screening
-      - Legal
       - Payment
-      - Identity
-      - Shipment
+      - Identity Verification
+      - Criminal Check
+      - Motor Vehicle Record Check
+      - Verification
+      - Occupational Health Screening
+      - Professional License
     ServiceGroupServices:
       title: ServiceGroupServices
       type: object
@@ -353,18 +313,58 @@ components:
                 description: True if the service is selected by default when a dashboard user selects the package for a case; false otherwise.
               serviceGroupServicesId:
                 type: string
-    ServiceCategory:
-      title: ServiceCategory
+    ServiceCategoryId:
+      title: ServiceCategoryId
       type: string
-      description: The category that a service belongs to.
+      description: The unique ID of the service category.
       enum:
+      - service-cat-payment
+      - service-cat-idv
+      - service-cat-criminal
+      - service-cat-mvr
+      - service-cat-verification
+      - service-cat-ohs
+      - service-cat-pro-lic
+    ServiceSubCategoryId:
+      title: ServiceSubCategoryId
+      type: string
+      description: The unique ID of the service subcategory.
+      enum:
+      - service-subcat-drug
+      - service-subcat-tb
+      - service-subcat-titer
+      - service-subcat-vacc
+      - service-subcat-physical
+    ServiceSubCategory:
+      title: ServiceSubCategory
+      type: string
+      description: The subcategory that a service belongs to.
+      enum:
+      - Drug Screening
+      - TB
+      - Titer
+      - Vaccination
+      - Physical
+    ServiceTypeId:
+      title: ServiceTypeId
+      type: string
+      description: 'The unique ID of the service type. A service can be one of the following types: screening, legal, payment, identity, or shipment.'
+      enum:
+      - 30bc2c03-c8dd-409a-8da6-e0070ea6a681
+      - a3b74b1b-b665-40be-bad2-2a49c801cf3f
+      - service-type-payment
+      - service-type-idv
+      - service-type-shipment
+    ServiceTypeName:
+      title: ServiceTypeName
+      type: string
+      description: The type of service.
+      enum:
+      - Screening
+      - Legal
       - Payment
-      - Identity Verification
-      - Criminal Check
-      - Motor Vehicle Record Check
-      - Verification
-      - Occupational Health Screening
-      - Professional License
+      - Identity
+      - Shipment
   securitySchemes:
     JWT:
       type: http

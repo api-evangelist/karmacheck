@@ -87,8 +87,8 @@ paths:
       - JWT: []
 components:
   schemas:
-    UserGetUserByGroupInternal:
-      title: User (Internal)
+    UserGetUserByGroup:
+      title: User
       type: object
       description: This model represents a User entity that is returned by the Get Users By Group Profile API.
       required:
@@ -108,21 +108,7 @@ components:
           enum:
           - 1
           - 0
-          description: 'A boolean integer: 1 (true) if the user''s account is enabled in KarmaCheck; 0 (false) if the user account is disabled. By default, all users are returned. Control by passing `includeDisabled=true|false` as a query param.'
-        username:
-          type: string
-          format: email
-          description: Not returned by default. Control by passing `includeEmail=true|false` as a query param.
-        mfa:
-          type: object
-          description: Not returned by default. Control by passing `includeMfa=true|false` as a query param.
-          required:
-          - enrollments
-          properties:
-            enrollments:
-              type: array
-              items:
-                $ref: '#/components/schemas/MFAEnrollment'
+          description: 'A boolean integer: 1 (true) if the user''s account is enabled in KarmaCheck; 0 (false) if the user account is disabled.'
     MFAEnrollment:
       type: object
       examples:
@@ -216,8 +202,8 @@ components:
               format: date-time
               example: '2025-11-05T18:35:34.431Z'
               description: The UTC timestamp when the MFA enrollment was revoked.
-    UserGetUserByGroup:
-      title: User
+    UserGetUserByGroupInternal:
+      title: User (Internal)
       type: object
       description: This model represents a User entity that is returned by the Get Users By Group Profile API.
       required:
@@ -237,7 +223,21 @@ components:
           enum:
           - 1
           - 0
-          description: 'A boolean integer: 1 (true) if the user''s account is enabled in KarmaCheck; 0 (false) if the user account is disabled.'
+          description: 'A boolean integer: 1 (true) if the user''s account is enabled in KarmaCheck; 0 (false) if the user account is disabled. By default, all users are returned. Control by passing `includeDisabled=true|false` as a query param.'
+        username:
+          type: string
+          format: email
+          description: Not returned by default. Control by passing `includeEmail=true|false` as a query param.
+        mfa:
+          type: object
+          description: Not returned by default. Control by passing `includeMfa=true|false` as a query param.
+          required:
+          - enrollments
+          properties:
+            enrollments:
+              type: array
+              items:
+                $ref: '#/components/schemas/MFAEnrollment'
   securitySchemes:
     JWT:
       type: http

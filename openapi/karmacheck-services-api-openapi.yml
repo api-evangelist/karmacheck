@@ -351,6 +351,44 @@ paths:
       - JWT: []
 components:
   schemas:
+    CPLC:
+      title: CPLC
+      type: object
+      required:
+      - id
+      - name
+      - category
+      - enabled
+      - crStamp
+      - modStamp
+      properties:
+        id:
+          description: 'The [unique identifier](docs/reference/cplc.md) of a professional license or certification.
+
+            '
+          type: string
+        name:
+          description: The [name](docs/reference/cplc.md) of the professional license or certification.
+          type: string
+        category:
+          type: string
+          enum:
+          - Finance
+          - General
+          - Healthcare
+          - Other
+          description: The category that the professional license or certification falls under.
+        enabled:
+          type: boolean
+          description: True if verification of the professional license or certification is enabled in KarmaCheck; false otherwise.
+        crStamp:
+          type: string
+          format: date-time
+          example: '2021-08-06T02:08:35.000Z'
+        modStamp:
+          type: string
+          format: date-time
+          example: '2021-08-06T02:08:35.000Z'
     CPLCDefinition:
       title: CPLCDefinition
       type: object
@@ -514,44 +552,6 @@ components:
                 type: number
               placeholder:
                 type: string
-    CPLC:
-      title: CPLC
-      type: object
-      required:
-      - id
-      - name
-      - category
-      - enabled
-      - crStamp
-      - modStamp
-      properties:
-        id:
-          description: 'The [unique identifier](docs/reference/cplc.md) of a professional license or certification.
-
-            '
-          type: string
-        name:
-          description: The [name](docs/reference/cplc.md) of the professional license or certification.
-          type: string
-        category:
-          type: string
-          enum:
-          - Finance
-          - General
-          - Healthcare
-          - Other
-          description: The category that the professional license or certification falls under.
-        enabled:
-          type: boolean
-          description: True if verification of the professional license or certification is enabled in KarmaCheck; false otherwise.
-        crStamp:
-          type: string
-          format: date-time
-          example: '2021-08-06T02:08:35.000Z'
-        modStamp:
-          type: string
-          format: date-time
-          example: '2021-08-06T02:08:35.000Z'
   securitySchemes:
     JWT:
       type: http

@@ -96,6 +96,16 @@ components:
         name:
           type: string
           description: Name of the verification book item.
+    ListMetadata:
+      title: ListMetadata
+      type: object
+      properties:
+        page:
+          type: number
+          description: The page to return
+        pageSize:
+          type: number
+          description: The size of each page
     SearchDetails:
       title: searchDetails
       type: object
@@ -112,16 +122,6 @@ components:
             Must be valid JSON, for example if you want to search for a back slash (\) you must escape it as "\\".
 
             '
-    ListMetadata:
-      title: ListMetadata
-      type: object
-      properties:
-        page:
-          type: number
-          description: The page to return
-        pageSize:
-          type: number
-          description: The size of each page
   securitySchemes:
     JWT:
       type: http
