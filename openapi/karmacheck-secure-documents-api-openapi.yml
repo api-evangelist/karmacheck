@@ -470,48 +470,26 @@ paths:
           description: Internal Server Error
 components:
   schemas:
-    DocumentList:
-      title: DocumentList
-      type: array
-      items:
-        type: object
-        required:
-        - id
-        - documentTypeId
-        - title
-        - description
-        - fileName
-        - fileKey
-        - fileFormat
-        - crUserId
-        - displayReport
-        properties:
-          id:
-            type: string
-            description: The ID of a secure document.
-          documentTypeId:
-            $ref: '#/components/schemas/DocumentTypeID'
-          title:
-            type:
-            - string
-            - 'null'
-          description:
-            type:
-            - string
-            - 'null'
-          fileName:
-            type: string
-          fileKey:
-            type: string
-            description: The reference ID of the file in KarmaCheck's storage system.
-          fileFormat:
-            type: string
-          crUserId:
-            type: string
-            description: The ID of the user that created a record of the secure document.
-          displayReport:
-            type: integer
-            description: 'A boolean integer: 1 (true) if the document is included in the report for the case; 0 (false) otherwise.'
+    DocumentTypeID:
+      title: DocumentTypeID
+      type: string
+      enum:
+      - 06813017-94ef-4250-9083-375935ce9dc8
+      - 4ad585b6-b087-11ec-9bf1-df77b62cb712
+      - 7d25e1de-0b46-4a6c-bd06-d0b55526af08
+      - 857d42f3-73b6-4588-8855-0ab49e376a84
+      - candidate-disclosures-and-authorizations
+      - cbsv-authorization
+      - da070d09-b52f-4423-9c94-eff458ea3aa0
+      - education-document
+      - employment-document
+      - ohs-breath-alcohol
+      - ohs-chain-of-custody
+      - ohs-occupational-health
+      - ohs-participant-passport
+      - ohs-result-certificate
+      - search-result
+      description: The ID of the document type that the secure document is categorized under. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
     DocumentFiles:
       title: DocumentFiles
       type: object
@@ -585,22 +563,6 @@ components:
             caseId:
               type: string
               description: The ID of the case to associate with the document.
-    DocumentRecords:
-      title: DocumentRecords
-      type: object
-      required:
-      - list
-      properties:
-        list:
-          type: array
-          items:
-            type: object
-            required:
-            - secureDocumentId
-            properties:
-              secureDocumentId:
-                type: string
-                description: The unique identifier for the secure document.
     DocumentType:
       title: DocumentType
       type: array
@@ -636,26 +598,64 @@ components:
           displayName:
             type: string
             description: The name of the secure document type that's displayed to dashboard users.
-    DocumentTypeID:
-      title: DocumentTypeID
-      type: string
-      enum:
-      - 06813017-94ef-4250-9083-375935ce9dc8
-      - 4ad585b6-b087-11ec-9bf1-df77b62cb712
-      - 7d25e1de-0b46-4a6c-bd06-d0b55526af08
-      - 857d42f3-73b6-4588-8855-0ab49e376a84
-      - candidate-disclosures-and-authorizations
-      - cbsv-authorization
-      - da070d09-b52f-4423-9c94-eff458ea3aa0
-      - education-document
-      - employment-document
-      - ohs-breath-alcohol
-      - ohs-chain-of-custody
-      - ohs-occupational-health
-      - ohs-participant-passport
-      - ohs-result-certificate
-      - search-result
-      description: The ID of the document type that the secure document is categorized under. See [Secure document type](docs/reference/secure-document-type.md) for details about each possible document type.
+    DocumentList:
+      title: DocumentList
+      type: array
+      items:
+        type: object
+        required:
+        - id
+        - documentTypeId
+        - title
+        - description
+        - fileName
+        - fileKey
+        - fileFormat
+        - crUserId
+        - displayReport
+        properties:
+          id:
+            type: string
+            description: The ID of a secure document.
+          documentTypeId:
+            $ref: '#/components/schemas/DocumentTypeID'
+          title:
+            type:
+            - string
+            - 'null'
+          description:
+            type:
+            - string
+            - 'null'
+          fileName:
+            type: string
+          fileKey:
+            type: string
+            description: The reference ID of the file in KarmaCheck's storage system.
+          fileFormat:
+            type: string
+          crUserId:
+            type: string
+            description: The ID of the user that created a record of the secure document.
+          displayReport:
+            type: integer
+            description: 'A boolean integer: 1 (true) if the document is included in the report for the case; 0 (false) otherwise.'
+    DocumentRecords:
+      title: DocumentRecords
+      type: object
+      required:
+      - list
+      properties:
+        list:
+          type: array
+          items:
+            type: object
+            required:
+            - secureDocumentId
+            properties:
+              secureDocumentId:
+                type: string
+                description: The unique identifier for the secure document.
   securitySchemes:
     JWT:
       type: http
