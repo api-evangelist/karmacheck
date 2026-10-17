@@ -80,22 +80,16 @@ paths:
           description: Internal Server Error
 components:
   schemas:
-    PublicVerificationBookItem:
-      title: PublicVerificationBookItem
+    ListMetadata:
+      title: ListMetadata
       type: object
       properties:
-        id:
-          type: string
-          description: Id of the verification book item.
-        city:
-          type: string
-          description: City of the verification book item.
-        state:
-          type: string
-          description: State of the verification book item.
-        name:
-          type: string
-          description: Name of the verification book item.
+        page:
+          type: number
+          description: The page to return
+        pageSize:
+          type: number
+          description: The size of each page
     SearchDetails:
       title: searchDetails
       type: object
@@ -112,16 +106,22 @@ components:
             Must be valid JSON, for example if you want to search for a back slash (\) you must escape it as "\\".
 
             '
-    ListMetadata:
-      title: ListMetadata
+    PublicVerificationBookItem:
+      title: PublicVerificationBookItem
       type: object
       properties:
-        page:
-          type: number
-          description: The page to return
-        pageSize:
-          type: number
-          description: The size of each page
+        id:
+          type: string
+          description: Id of the verification book item.
+        city:
+          type: string
+          description: City of the verification book item.
+        state:
+          type: string
+          description: State of the verification book item.
+        name:
+          type: string
+          description: Name of the verification book item.
   securitySchemes:
     JWT:
       type: http
