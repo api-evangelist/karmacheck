@@ -64,5 +64,131 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-KarmaCheck is a company surfaced via the API Evangelist harvest backlog (source: secondary-market) and added to the network as a stub for full-pipeline profiling.
-- https://forgeglobal.com/karmacheck_stock/
+KarmaCheck Inc. is a San Francisco based, API-first background check and credential verification company serving staffing, healthcare, gig-economy, call-center and IT/tech hiring workflows. The KarmaCheck API is a REST contract on api.karmacheck.io covering the full screening lifecycle: creating and placing cases, candidate onboarding with FCRA, e-signature, Canada, international and location-specific disclosure acknowledgement, criminal, identity, motor vehicle record, education, employment, professional-licence and occupational-health screenings, secure document upload and retrieval, package and service catalogs, jurisdiction lookup, verification-book search, adjudication and pre-adverse-action documents. Results are pushed asynchronously through Svix-delivered, HMAC-SHA256 signed webhooks (case.statuschange and casedata.statuschange). KarmaCheck also operates a remote MCP server so agents can order and track screenings from natural language, and integrates with Bullhorn, Workday and symplr CTM. The company holds a SOC 2 Type 2 report and operates as an FCRA consumer reporting agency.
+
+**Areas:** Background Checks · Employment Screening · Identity Verification · Credential Verification · Motor Vehicle Records · Occupational Health Screening · Drug Screening · Human Resources · Staffing · Healthcare · Compliance · FCRA
+
+## KarmaCheck on APIs.io
+
+Everything profiled for KarmaCheck is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/karmacheck/](https://apis.io/providers/karmacheck/)** — or go straight to one of the APIs or properties below.
+
+### APIs (9)
+
+- [KarmaCheck Authentication API](https://apis.io/apis/karmacheck/karmacheck-authentication-api/) — The Authentication API from KarmaCheck — 1 operation(s) for authentication.
+- [KarmaCheck Candidate onboarding API](https://apis.io/apis/karmacheck/karmacheck-candidate-onboarding-api/) — The Candidate onboarding API from KarmaCheck — 20 operation(s) for candidate onboarding.
+- [KarmaCheck Case API](https://apis.io/apis/karmacheck/karmacheck-case-api/) — The Case API from KarmaCheck — 2 operation(s) for case.
+- [KarmaCheck Cases API](https://apis.io/apis/karmacheck/karmacheck-cases-api/) — The Cases API from KarmaCheck — 22 operation(s) for cases.
+- [KarmaCheck Packages API](https://apis.io/apis/karmacheck/karmacheck-packages-api/) — The Packages API from KarmaCheck — 4 operation(s) for packages.
+- [KarmaCheck Secure documents API](https://apis.io/apis/karmacheck/karmacheck-secure-documents-api/) — The Secure documents API from KarmaCheck — 6 operation(s) for secure documents.
+- [KarmaCheck Services API](https://apis.io/apis/karmacheck/karmacheck-services-api/) — The Services API from KarmaCheck — 5 operation(s) for services.
+- [KarmaCheck Users API](https://apis.io/apis/karmacheck/karmacheck-users-api/) — The Users API from KarmaCheck — 1 operation(s) for users.
+- [KarmaCheck Verification Book API](https://apis.io/apis/karmacheck/karmacheck-verification-book-api/) — The Verification Book API from KarmaCheck — 1 operation(s) for verification book.
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### AsyncAPI (1)
+
+Event-driven and webhook contracts.
+
+- [Karmacheck Webhooks](https://apis.io/asyncapis/karmacheck/karmacheck-webhooks/)
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [KarmaCheck MCP Server](https://apis.io/servers/karmacheck/karmacheck-mcp-server/)
+
+#### Overlays (1)
+
+OpenAPI overlays, including conversational phrasing for each operation.
+
+- [Karmacheck Api Overlay](https://apis.io/overlays/karmacheck/karmacheck-api-overlay/)
+
+#### Security (2)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Karmacheck Authentication](https://apis.io/security/karmacheck/karmacheck-authentication/)
+- [Karmacheck Domain Security](https://apis.io/security/karmacheck/karmacheck-domain-security/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Karmacheck Plans Pricing](https://apis.io/plans/karmacheck/karmacheck-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Karmacheck Rate Limits](https://apis.io/rate-limits/karmacheck/karmacheck-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://www.karmacheck.com/)
+- [Documentation](https://developer.karmacheck.com/background-check-api/overview/introduction)
+- [Getting started](https://developer.karmacheck.com/background-check-api/guides/candidate-provided-pii-flow)
+- [API reference](https://developer.karmacheck.com/api-reference/authentication/authenticate-api-client)
+- [Support](https://www.karmacheck.com/contact-us)
+- [Blog](https://www.karmacheck.com/blogs)
+- [Terms of service](https://www.karmacheck.com/tos)
+- [Privacy policy](https://www.karmacheck.com/privacy-policy)
+
+## API Evangelist rating
+
+**Kin Score 49.3** — developing · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 75.0 |
+| Contract quality | 61.0 |
+| Contract governance | 18.2 |
+| Operational transparency | 23.7 |
+| Developer ergonomics | 66.1 |
+| Access clarity | 35.5 |
+
+**Agent readiness 54.1** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | verified |
+| MCP Server | documented (partial credit) |
+| Auth Clarity | served (partial credit) |
+| Idempotency | — |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | yes |
+| Agent Skills | derived (partial credit) |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | served (partial credit) |
+| Protected Resource Metadata | verified |
+| Dynamic Client Registration | yes |
+| Agentic Commerce | — |
+| Pagination Ratio | — |
+| Operation Distinctiveness | distinct |
+
+**Regulatory alignment 23.4** — Health
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/karmacheck/](https://apis.io/providers/karmacheck/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for KarmaCheck: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/karmacheck/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
