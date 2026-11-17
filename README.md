@@ -100,30 +100,85 @@ Model Context Protocol servers that expose the API to agents.
 
 - [KarmaCheck MCP Server](https://apis.io/servers/karmacheck/karmacheck-mcp-server/)
 
+#### Agentic access (1)
+
+Which operations an agent can call, which act, and which need a human in the loop.
+
+- [KarmaCheck Agentic Access](https://apis.io/agentic-access/karmacheck/karmacheck-agentic-access/)
+
+#### JSON Schema (26)
+
+The data models the API reads and writes.
+
+- [Authentication](https://apis.io/schemas/karmacheck/karmacheck-authentication/)
+- [CaseData](https://apis.io/schemas/karmacheck/karmacheck-case-data/)
+- [CaseOrderData](https://apis.io/schemas/karmacheck/karmacheck-case-order-data/)
+- [CaseSummary](https://apis.io/schemas/karmacheck/karmacheck-case-summary/)
+- [CPLC](https://apis.io/schemas/karmacheck/karmacheck-cplc/)
+- [CPLCDefinition](https://apis.io/schemas/karmacheck/karmacheck-cplcdefinition/)
+- [CreateCase](https://apis.io/schemas/karmacheck/karmacheck-create-case/)
+- [DocumentCreateRecords](https://apis.io/schemas/karmacheck/karmacheck-document-create-records/)
+- [DocumentFiles](https://apis.io/schemas/karmacheck/karmacheck-document-files/)
+- [DocumentList](https://apis.io/schemas/karmacheck/karmacheck-document-list/)
+- [DocumentRecords](https://apis.io/schemas/karmacheck/karmacheck-document-records/)
+- [DocumentType](https://apis.io/schemas/karmacheck/karmacheck-document-type/)
+- [LegalAcknowledgmentDisclosures](https://apis.io/schemas/karmacheck/karmacheck-legal-acknowledgment-disclosures/)
+- [ListMetadata](https://apis.io/schemas/karmacheck/karmacheck-list-metadata/)
+- [OrderConfig](https://apis.io/schemas/karmacheck/karmacheck-order-config/)
+- [PublicVerificationBookItem](https://apis.io/schemas/karmacheck/karmacheck-public-verification-book-item/)
+- [searchDetails](https://apis.io/schemas/karmacheck/karmacheck-search-details/)
+- [ServiceGroupServices](https://apis.io/schemas/karmacheck/karmacheck-service-group-services/)
+- [ServiceGroupServicesCase](https://apis.io/schemas/karmacheck/karmacheck-service-group-services-case/)
+- [Testimony](https://apis.io/schemas/karmacheck/karmacheck-testimony/)
+- [TestimonyAddress](https://apis.io/schemas/karmacheck/karmacheck-testimony-address/)
+- [TestimonyDriversLicense](https://apis.io/schemas/karmacheck/karmacheck-testimony-drivers-license/)
+- [TestimonyEducation](https://apis.io/schemas/karmacheck/karmacheck-testimony-education/)
+- [TestimonyEmployment](https://apis.io/schemas/karmacheck/karmacheck-testimony-employment/)
+- [User](https://apis.io/schemas/karmacheck/karmacheck-user-get-user-by-group/)
+- …and 1 more published on APIs.io
+
+#### JSON-LD (1)
+
+Linked-data contexts for the provider's vocabulary.
+
+- [Karmacheck Context](https://apis.io/jsonld/karmacheck/karmacheck-context/)
+
 #### Overlays (1)
 
 OpenAPI overlays, including conversational phrasing for each operation.
 
-- [Karmacheck Api Overlay](https://apis.io/overlays/karmacheck/karmacheck-api-overlay/)
+- [KarmaCheck Api Overlay](https://apis.io/overlays/karmacheck/karmacheck-api-overlay/)
+
+#### Governance rules (1)
+
+Spectral rulesets for the provider's contracts.
+
+- [KarmaCheck API Rules](https://apis.io/rules/karmacheck/karmacheck-rules/)
 
 #### Security (2)
 
 Authentication, trust centre, and vulnerability disclosure.
 
-- [Karmacheck Authentication](https://apis.io/security/karmacheck/karmacheck-authentication/)
-- [Karmacheck Domain Security](https://apis.io/security/karmacheck/karmacheck-domain-security/)
+- [KarmaCheck Authentication](https://apis.io/security/karmacheck/karmacheck-authentication/)
+- [KarmaCheck Domain Security](https://apis.io/security/karmacheck/karmacheck-domain-security/)
 
 #### Plans and pricing (1)
 
 Published plans, tiers and prices.
 
-- [Karmacheck Plans Pricing](https://apis.io/plans/karmacheck/karmacheck-plans-pricing/)
+- [KarmaCheck Plans Pricing](https://apis.io/plans/karmacheck/karmacheck-plans-pricing/)
 
 #### Rate limits (1)
 
 Published request limits.
 
-- [Karmacheck Rate Limits](https://apis.io/rate-limits/karmacheck/karmacheck-rate-limits/)
+- [KarmaCheck Rate Limits](https://apis.io/rate-limits/karmacheck/karmacheck-rate-limits/)
+
+#### FinOps (1)
+
+What the API costs to run, by operation.
+
+- [KarmaCheck Finops](https://apis.io/finops/karmacheck/karmacheck-finops/)
 
 ## Where to find this API
 
